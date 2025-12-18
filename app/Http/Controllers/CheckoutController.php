@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\Order;
 use App\Services\OrderService;
 use App\Services\MidtransService;
+use App\Services\TicketService;
 use Illuminate\Http\Request;
 
 class CheckoutController extends Controller
@@ -23,7 +24,7 @@ class CheckoutController extends Controller
     {
         $event->load('ticketTypes.warTickets');
 
-        return view('checkout.index', compact('event'));
+        return view('checkout.checkout', compact('event'));
     }
 
     public function process(Request $request, Event $event)
@@ -61,5 +62,19 @@ class CheckoutController extends Controller
             ->firstOrFail();
 
         return view('order.show', compact('order'));
+    }
+
+    public function testEmail(Request $request)
+    {
+        $ticketService = new TicketService();
+        $order = Order::with(['customer', 'event', 'orderItems.ticketType', 'orderItems.tickets'])
+            ->findOrFail($request->id);
+        $tickets = $order->orderItems->flatMap(function ($item) {
+            return $item->tickets;
+        })->toArray();
+
+        $ticketService->sendTicketEmail($order, $tickets);
+
+        return response()->json(['success' => true]);
     }
 }

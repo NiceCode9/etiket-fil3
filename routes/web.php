@@ -15,3 +15,4 @@ Route::get('/events/{slug}', [WebEventController::class, 'show'])->name('events.
 Route::get('/checkout/{event}', [CheckoutController::class, 'index'])->name('checkout');
 Route::post('/checkout/{event}', [CheckoutController::class, 'process'])->name('checkout.process');
 Route::get('/order/{orderNumber}', [CheckoutController::class, 'show'])->name('order.show');
+Route::get('/order/{id}/test-email', [CheckoutController::class, 'testEmail'])->name('order.test-email');

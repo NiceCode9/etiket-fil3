@@ -24,67 +24,51 @@
     @stack('head-scripts')
 </head>
 
-<body class="font-sans bg-white text-slate-800 flex flex-col min-h-screen">
+<body class="font-sans bg-gray-50 text-slate-800 flex flex-col min-h-screen">
 
     <!-- =========================================================================
          NAVBAR
     ========================================================================== -->
-    <nav class="fixed w-full z-50 bg-gray-800 border-b border-gray-700 transition-all duration-300" id="navbar">
+    <nav class="fixed w-full z-50 glass-nav border-b border-gray-800 transition-all duration-300" id="navbar">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
+            <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
                 <a href="{{ route('home') }}" class="flex-shrink-0">
                     <div class="flex items-center gap-2">
-                        <div class="text-white font-bold text-2xl flex items-center gap-1">
-                            <span class="bg-brand-yellow text-black px-2 py-1 rounded transform -skew-x-12">U</span>
-                            <span>ntix</span>
+                        <div class="bg-brand-yellow text-black font-bold text-2xl px-2 py-1 rounded skew-x-[-10deg]">
+                            UNTIX
                         </div>
                     </div>
                 </a>
 
                 <!-- Desktop Menu -->
-                <div class="hidden md:flex items-center space-x-1">
+                <div class="hidden md:flex items-center space-x-8">
                     <a href="{{ route('home') }}"
-                        class="px-4 py-2 rounded-full font-medium transition {{ request()->routeIs('home') ? 'bg-brand-yellow text-black' : 'text-white hover:text-brand-yellow' }}">
+                        class="text-gray-300 hover:text-brand-yellow transition font-medium {{ request()->routeIs('home') ? 'text-brand-yellow' : '' }}">
                         Beranda
                     </a>
                     <a href="{{ route('events.index') }}"
-                        class="px-4 py-2 rounded-full font-medium transition {{ request()->routeIs('events.*') ? 'bg-brand-yellow text-black' : 'text-white hover:text-brand-yellow' }}">
-                        Jelajah
-                    </a>
-                    <a href="#"
-                        class="px-4 py-2 rounded-full text-white hover:text-brand-yellow font-medium transition">
-                        Tentang
-                    </a>
-                    <a href="#"
-                        class="px-4 py-2 rounded-full text-white hover:text-brand-yellow font-medium transition">
-                        Hubungi Kami
+                        class="text-gray-300 hover:text-brand-yellow transition font-medium {{ request()->routeIs('events.*') ? 'text-brand-yellow' : '' }}">
+                        Jelajah Event
                     </a>
                 </div>
 
                 <!-- Auth Buttons -->
                 <div class="hidden md:flex items-center space-x-4">
-                    <button class="text-white hover:text-brand-yellow transition">
-                        <i class="fas fa-search text-lg"></i>
-                    </button>
-                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-700 text-white">
-                        <i class="fas fa-globe"></i>
-                        <span class="text-sm font-medium">ID</span>
-                    </div>
                     @auth
-                        <div class="flex items-center space-x-3">
-                            <span class="text-white text-sm">{{ Auth::user()->name }}</span>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-gray-300">Halo, {{ Auth::user()->name }}</span>
                             <form method="POST" action="{{ route('filament.admin.auth.logout') }}" class="inline">
                                 @csrf
                                 <button type="submit"
-                                    class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition">
+                                    class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full transition transform hover:scale-105">
                                     Keluar
                                 </button>
                             </form>
                         </div>
                     @else
                         <a href="{{ route('filament.admin.auth.login') }}"
-                            class="bg-brand-yellow hover:bg-yellow-400 text-black font-bold py-2 px-6 rounded-lg transition transform hover:scale-105">
+                            class="bg-brand-yellow hover:bg-yellow-400 text-black font-bold py-2 px-6 rounded-full transition transform hover:scale-105 shadow-lg shadow-yellow-500/20">
                             Masuk
                         </a>
                     @endauth
@@ -100,21 +84,15 @@
         </div>
 
         <!-- Mobile Menu Panel -->
-        <div id="mobile-menu" class="hidden md:hidden bg-gray-800 border-t border-gray-700">
+        <div id="mobile-menu" class="hidden md:hidden bg-slate-900 border-t border-gray-800">
             <div class="px-4 pt-2 pb-4 space-y-1">
                 <a href="{{ route('home') }}"
-                    class="block px-3 py-2 text-base font-medium rounded-lg {{ request()->routeIs('home') ? 'bg-brand-yellow text-black' : 'text-white hover:bg-gray-700' }}">
+                    class="block px-3 py-2 text-base font-medium text-white hover:text-brand-yellow {{ request()->routeIs('home') ? 'text-brand-yellow' : '' }}">
                     Beranda
                 </a>
                 <a href="{{ route('events.index') }}"
-                    class="block px-3 py-2 text-base font-medium rounded-lg {{ request()->routeIs('events.*') ? 'bg-brand-yellow text-black' : 'text-white hover:bg-gray-700' }}">
-                    Jelajah
-                </a>
-                <a href="#" class="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700 rounded-lg">
-                    Tentang
-                </a>
-                <a href="#" class="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700 rounded-lg">
-                    Hubungi Kami
+                    class="block px-3 py-2 text-base font-medium text-gray-300 hover:text-brand-yellow {{ request()->routeIs('events.*') ? 'text-brand-yellow' : '' }}">
+                    Jelajah Event
                 </a>
                 @auth
                     <div class="border-t border-gray-700 pt-2 mt-2">
@@ -122,14 +100,14 @@
                         <form method="POST" action="{{ route('filament.admin.auth.logout') }}">
                             @csrf
                             <button type="submit"
-                                class="block w-full text-left px-3 py-2 text-base font-medium text-red-400 hover:text-red-300 rounded-lg">
+                                class="block w-full text-left px-3 py-2 text-base font-medium text-red-400 hover:text-red-300">
                                 Keluar
                             </button>
                         </form>
                     </div>
                 @else
                     <a href="{{ route('filament.admin.auth.login') }}"
-                        class="block px-3 py-2 text-base font-medium bg-brand-yellow text-black hover:bg-yellow-400 rounded-lg mt-2">
+                        class="block px-3 py-2 text-base font-medium text-brand-yellow hover:text-yellow-300">
                         Masuk
                     </a>
                 @endauth
@@ -142,7 +120,7 @@
     <!-- =========================================================================
          MAIN CONTENT
     ========================================================================== -->
-    <main class="flex-grow pt-16">
+    <main class="flex-grow pt-20">
         @yield('content')
     </main>
     <!-- ================= END MAIN CONTENT ================= -->
@@ -151,64 +129,61 @@
     <!-- =========================================================================
          FOOTER
     ========================================================================== -->
-    <footer class="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
+    <footer class="bg-slate-900 text-gray-400 py-12 border-t border-gray-800">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                 <!-- Brand -->
                 <div>
-                    <div class="text-white font-bold text-2xl flex items-center gap-1 mb-4">
-                        <span class="bg-brand-yellow text-black px-2 py-1 rounded transform -skew-x-12">U</span>
-                        <span>ntix</span>
+                    <div
+                        class="bg-brand-yellow text-black font-bold text-xl px-2 py-1 rounded skew-x-[-10deg] inline-block mb-4">
+                        UNTIX
                     </div>
-                    <p class="text-sm text-gray-400">Platform ticketing event terpercaya di Indonesia.</p>
+                    <p class="text-sm">Platform ticketing event terpercaya di Indonesia.</p>
                 </div>
 
-                <!-- Quick Links -->
+                <!-- Links -->
                 <div>
-                    <h5 class="text-white font-bold mb-4">Quick Links</h5>
+                    <h5 class="text-white font-bold mb-4">Links</h5>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="{{ route('home') }}" class="hover:text-brand-yellow transition">Beranda</a></li>
+                        <li><a href="#" class="hover:text-brand-yellow transition">Tentang Kami</a></li>
                         <li><a href="{{ route('events.index') }}" class="hover:text-brand-yellow transition">Jelajah
                                 Event</a></li>
-                        <li><a href="#" class="hover:text-brand-yellow transition">Tentang Kami</a></li>
                         <li><a href="#" class="hover:text-brand-yellow transition">Cara Pesan</a></li>
                     </ul>
                 </div>
 
-                <!-- Support -->
+                <!-- Bantuan -->
                 <div>
-                    <h5 class="text-white font-bold mb-4">Support</h5>
+                    <h5 class="text-white font-bold mb-4">Bantuan</h5>
                     <ul class="space-y-2 text-sm">
                         <li><a href="#" class="hover:text-brand-yellow transition">FAQ</a></li>
                         <li><a href="#" class="hover:text-brand-yellow transition">Kontak</a></li>
                         <li><a href="#" class="hover:text-brand-yellow transition">Syarat & Ketentuan</a></li>
-                        <li><a href="#" class="hover:text-brand-yellow transition">Kebijakan Privasi</a></li>
                     </ul>
                 </div>
 
-                <!-- Follow Us -->
+                <!-- Social -->
                 <div>
-                    <h5 class="text-white font-bold mb-4">Follow Us</h5>
-                    <p class="text-sm text-gray-400 mb-4">Stay updated with our latest events</p>
-                    <div class="flex gap-3">
+                    <h5 class="text-white font-bold mb-4">Social Media</h5>
+                    <div class="flex gap-4">
                         <a href="#"
-                            class="w-10 h-10 rounded-full bg-brand-yellow flex items-center justify-center text-black hover:bg-yellow-400 transition">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#"
-                            class="w-10 h-10 rounded-full bg-brand-yellow flex items-center justify-center text-black hover:bg-yellow-400 transition">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
-                        <a href="#"
-                            class="w-10 h-10 rounded-full bg-brand-yellow flex items-center justify-center text-black hover:bg-yellow-400 transition">
+                            class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center hover:bg-brand-yellow hover:text-black transition">
                             <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#"
+                            class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center hover:bg-brand-yellow hover:text-black transition">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a href="#"
+                            class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center hover:bg-brand-yellow hover:text-black transition">
+                            <i class="fab fa-twitter"></i>
                         </a>
                     </div>
                 </div>
             </div>
 
-            <div class="border-t border-gray-800 pt-6 text-center text-sm">
-                <p>&copy; {{ date('Y') }} Untix. All rights reserved.</p>
+            <div class="border-t border-gray-800 pt-8 text-center text-sm">
+                &copy; {{ date('Y') }} Untix. All rights reserved.
             </div>
         </div>
     </footer>

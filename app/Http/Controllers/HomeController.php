@@ -11,7 +11,7 @@ class HomeController extends Controller
         $upcomingEvents = Event::published()
             ->upcoming()
             ->orderBy('event_date', 'asc')
-            ->take(6)
+            ->take(8)
             ->get();
 
         return view('home', compact('upcomingEvents'));

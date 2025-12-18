@@ -43,10 +43,23 @@ class TicketEmail extends Mailable
         $attachments = [];
 
         foreach ($this->tickets as $ticket) {
-            if ($ticket->qr_code_path) {
-                $attachments[] = Attachment::fromStorage('public/' . $ticket->qr_code_path)
-                    ->as("ticket-{$ticket->ticket_number}.png")
-                    ->withMime('image/png');
+            // if ($ticket['qr_code_path']) {
+            //     $attachments[] = Attachment::fromStorage('public/' . $ticket['qr_code_path'])
+            //         ->as("ticket-{$ticket['ticket_number']}.png")
+            //         ->withMime('image/png');
+            // }
+
+            $ticketObj = is_array($ticket) ? (object) $ticket : $ticket;
+
+            if ($ticketObj->qr_code_path) {
+                $fullPath = Storage::disk('public')->path($ticketObj->qr_code_path);
+
+                // Pastikan file exists
+                if (file_exists($fullPath)) {
+                    $attachments[] = Attachment::fromPath($fullPath)
+                        ->as("ticket-{$ticketObj->ticket_number}.png")
+                        ->withMime('image/png');
+                }
             }
         }
 

@@ -183,7 +183,7 @@
                         @forelse($events as $event)
                             <div
                                 class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition group cursor-pointer">
-                                <a href="{{ route('events.show', $event->id) }}">
+                                <a href="{{ route('events.show', $event->slug) }}">
                                     <div class="relative h-48 overflow-hidden">
                                         <img src="{{ $event->image_url ?? 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?auto=format&fit=crop&w=800&q=80' }}"
                                             class="w-full h-full object-cover group-hover:scale-110 transition duration-500"

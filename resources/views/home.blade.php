@@ -4,7 +4,13 @@
 
 @section('content')
     <!-- Hero Section -->
-    <section class="relative bg-slate-900 text-white py-20 lg:py-32 overflow-hidden">
+    {{-- <section class="relative bg-slate-900 text-white py-20 lg:py-32 overflow-hidden"> --}}
+    <section class="relative text-white py-20 lg:py-32 overflow-hidden bg-cover bg-center"
+        style="background-image: url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?ixlib=rb-4.0.1&auto=format&fit=crop&w=1920&q=80');">
+
+        <!-- Overlay gelap -->
+        <div class="absolute inset-0 bg-slate-900/80 z-0"></div>
+
         <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
             <div class="absolute -top-20 -right-20 w-96 h-96 bg-brand-yellow opacity-10 rounded-full blur-3xl">
             </div>
@@ -45,7 +51,7 @@
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-end mb-10">
                 <div>
-                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Event Terpopuler</h2>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Event Mendatang</h2>
                     <p class="text-gray-500">Jangan sampai ketinggalan!</p>
                 </div>
                 <a href="{{ route('events.index') }}"
@@ -56,37 +62,44 @@
 
             <!-- Events Grid -->
             <div id="events-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                @forelse($events as $event)
+                @forelse($upcomingEvents as $event)
                     <div
                         class="bg-white rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition group">
-                        <a href="{{ route('events.show', $event->id) }}">
+                        <a href="{{ route('events.show', $event->slug) }}">
                             <div class="relative h-48 overflow-hidden">
-                                <img src="{{ $event->image_url ?? 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?auto=format&fit=crop&w=800&q=80' }}"
+                                <img src="{{ $event->poster_image ? asset('storage/' . $event->poster_image) : 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop' }}"
                                     class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
-                                    alt="{{ $event->title }}">
+                                    alt="{{ $event->name }}">
                             </div>
                             <div class="p-4">
                                 <div class="text-xs text-gray-500 mb-1 flex items-center gap-1">
                                     <i class="far fa-calendar"></i>
-                                    {{ \Carbon\Carbon::parse($event->event_date)->format('d M Y') }}
+                                    {{ $event->event_date->format('d M Y') }}
                                 </div>
                                 <h3 class="font-bold text-lg mb-2 leading-snug group-hover:text-blue-600 transition">
-                                    {{ $event->title }}
+                                    {{ $event->name }}
                                 </h3>
                                 <p class="text-xs text-gray-500 mb-3">
-                                    <i class="fas fa-map-marker-alt mr-1"></i>{{ $event->location }}
+                                    <i class="fas fa-map-marker-alt mr-1"></i>{{ $event->venue }}
                                 </p>
                                 <div class="flex justify-between items-center mt-3">
                                     <span class="text-xs text-gray-500">Mulai dari</span>
-                                    <span class="font-bold text-slate-900">Rp
-                                        {{ number_format($event->price_regular, 0, ',', '.') }}</span>
+                                    <span class="font-bold text-slate-900">
+                                        @if ($event->ticketTypes->count() > 0)
+                                            Rp {{ number_format($event->ticketTypes->min('price'), 0, ',', '.') }}
+                                        @else
+                                            TBA
+                                        @endif
+                                    </span>
                                 </div>
                             </div>
                         </a>
                     </div>
                 @empty
                     <div class="col-span-full text-center py-12">
-                        <p class="text-gray-500 text-lg">Belum ada event tersedia saat ini.</p>
+                        <i class="fas fa-calendar-times text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500 text-lg">Belum ada event mendatang saat ini.</p>
+                        <p class="text-gray-400 text-sm mt-2">Pantau terus untuk event-event menarik!</p>
                     </div>
                 @endforelse
             </div>

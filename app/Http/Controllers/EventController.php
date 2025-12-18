@@ -14,7 +14,7 @@ class EventController extends Controller
             ->orderBy('event_date', 'asc')
             ->paginate(12);
 
-        return view('events.index', compact('events'));
+        return view('events.events', compact('events'));
     }
 
     public function show($slug)
