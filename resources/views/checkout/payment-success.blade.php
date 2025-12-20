@@ -18,24 +18,24 @@
                         Terima kasih atas pembelian Anda
                     </p>
                     <p class="text-sm text-gray-500">
-                        Tiket telah dikirim ke email <strong>{{ $order->customer->email }}</strong>
+                        Invoice dengan QR code sudah siap untuk di-download
                     </p>
                 </div>
 
                 <!-- Success Details -->
                 <div class="bg-green-50 border-2 border-green-200 rounded-xl p-6 mb-6">
                     <div class="flex items-start mb-4">
-                        <i class="fas fa-envelope text-green-600 text-2xl mr-4 mt-1"></i>
+                        <i class="fas fa-file-invoice text-green-600 text-2xl mr-4 mt-1"></i>
                         <div class="flex-1">
-                            <h3 class="font-bold text-green-900 mb-2">Email Konfirmasi Terkirim</h3>
+                            <h3 class="font-bold text-green-900 mb-2">Invoice Siap Diunduh</h3>
                             <p class="text-sm text-green-800 mb-3">
-                                Kami telah mengirimkan tiket dan detail pesanan Anda melalui email.
-                                Silakan periksa inbox atau folder spam Anda.
+                                Invoice berisi QR code untuk ditukarkan dengan gelang tiket di lokasi event.
+                                Pastikan membawa identitas asli yang sesuai dengan data pemesanan.
                             </p>
-                            <div class="bg-white rounded-lg p-3 border border-green-200">
-                                <p class="text-xs text-gray-600 mb-1">Email dikirim ke:</p>
-                                <p class="font-mono text-sm text-gray-900">{{ $order->customer->email }}</p>
-                            </div>
+                            <a href="{{ route('payment.download-invoice', $order->order_number) }}"
+                                class="inline-flex items-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                                <i class="fas fa-download mr-2"></i> Download Invoice (PDF)
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -69,6 +69,10 @@
                             <div class="flex justify-between mb-2">
                                 <span class="text-gray-600">Nama Pemesan</span>
                                 <span class="text-slate-900">{{ $order->customer->full_name }}</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">Email</span>
+                                <span class="text-slate-900">{{ $order->customer->email }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">No. Telepon</span>
@@ -112,9 +116,11 @@
                         <div class="flex-1">
                             <p class="text-sm text-blue-800 font-semibold mb-2">Informasi Penting:</p>
                             <ul class="text-xs text-blue-700 space-y-1">
-                                <li>• Simpan email tiket Anda dengan baik</li>
-                                <li>• Tunjukkan QR Code pada tiket saat masuk event</li>
-                                <li>• Tiket tidak dapat dipindahtangankan</li>
+                                <li>• Download invoice dan simpan dengan baik</li>
+                                <li>• Bawa invoice dan identitas asli ke lokasi event</li>
+                                <li>• Scan QR Code pada invoice untuk menukar gelang tiket</li>
+                                <li>• Gelang tiket adalah akses masuk ke event venue</li>
+                                <li>• QR code hanya bisa digunakan sekali</li>
                                 <li>• Hubungi customer service jika ada pertanyaan</li>
                             </ul>
                         </div>
@@ -123,9 +129,9 @@
 
                 <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <a href="{{ route('order.show', $order->order_number) }}"
+                    <a href="{{ route('payment.download-invoice', $order->order_number) }}"
                         class="flex-1 text-center bg-brand-yellow hover:bg-yellow-400 text-black font-bold py-4 px-6 rounded-xl transition transform hover:scale-105 shadow-lg">
-                        <i class="fas fa-ticket-alt mr-2"></i> Lihat Tiket Saya
+                        <i class="fas fa-download mr-2"></i> Download Invoice
                     </a>
                     <a href="{{ route('home') }}"
                         class="flex-1 text-center bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 px-6 rounded-xl transition shadow-lg">
@@ -133,10 +139,10 @@
                     </a>
                 </div>
 
-                <!-- Download Reminder -->
+                <!-- Help -->
                 <div class="mt-6 text-center">
                     <p class="text-xs text-gray-500">
-                        Tidak menerima email?
+                        Butuh bantuan?
                         <a href="mailto:support@example.com" class="text-brand-yellow hover:underline font-semibold">
                             Hubungi Kami
                         </a>
@@ -149,9 +155,8 @@
 
 @push('scripts')
     <script>
-        // Confetti animation on page load
+        // Confetti animation on page load (optional)
         window.onload = function() {
-            // You can add confetti library here if you want
             console.log('Payment successful!');
         };
     </script>

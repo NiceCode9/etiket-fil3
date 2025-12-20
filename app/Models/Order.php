@@ -20,6 +20,7 @@ class Order extends Model
         'payment_method',
         'payment_channel',
         'snap_token',
+        'invoice_path',
         'transaction_id',
         'paid_at',
         'expired_at',

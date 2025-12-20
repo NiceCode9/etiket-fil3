@@ -52,6 +52,10 @@
                         class="px-4 py-2 rounded-full font-medium transition {{ request()->routeIs('events.*') ? 'bg-brand-yellow text-black' : 'text-white hover:text-brand-yellow' }}">
                         Jelajah
                     </a>
+                    <a href="{{ route('tracking.index') }}"
+                        class="px-4 py-2 rounded-full text-white hover:text-brand-yellow font-medium transition">
+                        Tracking Pesanan
+                    </a>
                     <a href="#"
                         class="px-4 py-2 rounded-full text-white hover:text-brand-yellow font-medium transition">
                         Tentang

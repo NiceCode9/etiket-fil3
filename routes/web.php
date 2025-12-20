@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\EventController as WebEventController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\TrackingController;
 
 // Home
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -11,6 +12,14 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Events
 Route::get('/events', [WebEventController::class, 'index'])->name('events.index');
 Route::get('/events/{slug}', [WebEventController::class, 'show'])->name('events.show');
+
+// Tracking
+Route::prefix('tracking')->name('tracking.')->group(function () {
+    Route::get('/', [TrackingController::class, 'index'])->name('index');
+    Route::post('/track', [TrackingController::class, 'track'])->name('track');
+    Route::get('/{orderNumber}', [TrackingController::class, 'show'])->name('detail');
+    Route::get('/{orderNumber}/download-invoice', [TrackingController::class, 'downloadInvoice'])->name('download-invoice');
+});
 
 // Checkout - Process order
 Route::post('/checkout/{event}', [CheckoutController::class, 'process'])->name('checkout.process');
@@ -31,6 +40,9 @@ Route::prefix('payment')->name('payment.')->group(function () {
 
     // Check payment status (AJAX)
     Route::get('/{orderNumber}/check-status', [CheckoutController::class, 'checkStatus'])->name('check-status');
+
+    // Download invoice
+    Route::get('/{orderNumber}/download-invoice', [CheckoutController::class, 'downloadInvoice'])->name('download-invoice');
 
     // Midtrans finish redirect
     Route::get('/{orderNumber}/finish', [\App\Http\Controllers\Api\MidtransCallbackController::class, 'finish'])->name('finish');

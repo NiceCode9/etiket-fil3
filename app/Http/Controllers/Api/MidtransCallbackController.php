@@ -12,11 +12,16 @@ class MidtransCallbackController extends Controller
 {
     protected $midtransService;
     protected $ticketService;
+    protected $invoiceService;
 
-    public function __construct(MidtransService $midtransService, TicketService $ticketService)
-    {
+    public function __construct(
+        MidtransService $midtransService,
+        TicketService $ticketService,
+        \App\Services\InvoiceService $invoiceService
+    ) {
         $this->midtransService = $midtransService;
         $this->ticketService = $ticketService;
+        $this->invoiceService = $invoiceService;
     }
 
     /**
@@ -36,6 +41,12 @@ class MidtransCallbackController extends Controller
                 if ($order->orderItems->flatMap->tickets->isEmpty()) {
                     $this->ticketService->generateTicketsForOrder($order);
                     Log::info('Tickets generated for order: ' . $order->order_number);
+                }
+
+                // Generate invoice if not exists
+                if (!$order->invoice_path) {
+                    $this->invoiceService->generateInvoice($order);
+                    Log::info('Invoice generated for order: ' . $order->order_number);
                 }
             }
 

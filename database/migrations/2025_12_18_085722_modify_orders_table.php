@@ -26,6 +26,11 @@ return new class extends Migration
             if (!Schema::hasColumn('orders', 'cancelled_at')) {
                 $table->timestamp('cancelled_at')->nullable()->after('expired_at');
             }
+
+            // Path untuk invoice PDF
+            if (!Schema::hasColumn('orders', 'invoice_path')) {
+                $table->string('invoice_path')->nullable()->after('snap_token');
+            }
         });
     }
 
@@ -35,7 +40,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn(['snap_token', 'expired_at', 'cancelled_at']);
+            $table->dropColumn(['snap_token', 'expired_at', 'cancelled_at', 'invoice_path']);
         });
     }
 };

@@ -33,7 +33,7 @@ class TicketService
         }
 
         // Send email with tickets
-        $this->sendTicketEmail($order, $tickets);
+        // $this->sendTicketEmail($order, $tickets);
 
         return $tickets;
     }

@@ -15,15 +15,18 @@ class CheckoutController extends Controller
     protected $orderService;
     protected $midtransService;
     protected $ticketService;
+    protected $invoiceService;
 
     public function __construct(
         OrderService $orderService,
         MidtransService $midtransService,
-        TicketService $ticketService
+        TicketService $ticketService,
+        \App\Services\InvoiceService $invoiceService
     ) {
         $this->orderService = $orderService;
         $this->midtransService = $midtransService;
         $this->ticketService = $ticketService;
+        $this->invoiceService = $invoiceService;
     }
 
     /**
@@ -124,7 +127,25 @@ class CheckoutController extends Controller
             return redirect()->route('payment.failed', $orderNumber);
         }
 
+        // Generate invoice if not exists
+        if (!$order->invoice_path) {
+            $this->invoiceService->generateInvoice($order);
+            $order->refresh();
+        }
+
         return view('checkout.payment-success', compact('order'));
+    }
+
+    /**
+     * Download invoice
+     */
+    public function downloadInvoice($orderNumber)
+    {
+        $order = Order::where('order_number', $orderNumber)
+            ->where('payment_status', 'paid')
+            ->firstOrFail();
+
+        return $this->invoiceService->downloadInvoice($order);
     }
 
     /**
@@ -135,11 +156,6 @@ class CheckoutController extends Controller
         $order = Order::with(['customer', 'event', 'orderItems.ticketType'])
             ->where('order_number', $orderNumber)
             ->firstOrFail();
-
-        // If not paid yet, redirect back to waiting
-        if ($order->payment_status === 'pending') {
-            return redirect()->route('payment.waiting', $orderNumber);
-        }
 
         return view('checkout.payment-failed', compact('order'));
     }
