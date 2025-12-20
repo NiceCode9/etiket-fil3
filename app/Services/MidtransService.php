@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Order;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Midtrans\Notification;
 
 class MidtransService
 {
@@ -34,12 +35,18 @@ class MidtransService
                 'unit' => 'hours',
                 'duration' => 24,
             ],
+            'callbacks' => [
+                'finish' => route('payment.finish', $order->order_number),
+            ],
         ];
 
         try {
             $snapToken = Snap::getSnapToken($params);
 
-            $order->update(['snap_token' => $snapToken]);
+            $order->update([
+                'snap_token' => $snapToken,
+                'expired_at' => now()->addHours(24),
+            ]);
 
             return $snapToken;
         } catch (\Exception $e) {
@@ -65,36 +72,81 @@ class MidtransService
 
     public function handleNotification(array $data)
     {
-        $transactionId = $data['transaction_id'] ?? null;
-        $orderId = $data['order_id'] ?? null;
-        $transactionStatus = $data['transaction_status'] ?? null;
-        $fraudStatus = $data['fraud_status'] ?? null;
+        try {
+            // Create notification instance
+            $notification = new Notification();
 
-        $order = Order::where('order_number', $orderId)->firstOrFail();
+            $transactionStatus = $notification->transaction_status;
+            $fraudStatus = $notification->fraud_status;
+            $orderId = $notification->order_id;
+            $transactionId = $notification->transaction_id;
 
-        if ($transactionStatus == 'capture') {
-            if ($fraudStatus == 'accept') {
+            $order = Order::where('order_number', $orderId)->firstOrFail();
+
+            // Handle different transaction statuses
+            if ($transactionStatus == 'capture') {
+                if ($fraudStatus == 'accept') {
+                    $this->setOrderPaid($order, $transactionId);
+                } else {
+                    $order->update([
+                        'payment_status' => 'pending',
+                        'transaction_id' => $transactionId,
+                    ]);
+                }
+            } elseif ($transactionStatus == 'settlement') {
+                $this->setOrderPaid($order, $transactionId);
+            } elseif ($transactionStatus == 'pending') {
                 $order->update([
-                    'payment_status' => 'paid',
+                    'payment_status' => 'pending',
                     'transaction_id' => $transactionId,
-                    'paid_at' => now(),
+                ]);
+            } elseif ($transactionStatus == 'deny') {
+                $order->update([
+                    'payment_status' => 'failed',
+                    'transaction_id' => $transactionId,
+                ]);
+            } elseif ($transactionStatus == 'expire') {
+                $order->update([
+                    'payment_status' => 'expired',
+                    'transaction_id' => $transactionId,
+                ]);
+            } elseif ($transactionStatus == 'cancel') {
+                $order->update([
+                    'payment_status' => 'cancelled',
+                    'transaction_id' => $transactionId,
                 ]);
             }
-        } elseif ($transactionStatus == 'settlement') {
-            $order->update([
-                'payment_status' => 'paid',
-                'transaction_id' => $transactionId,
-                'paid_at' => now(),
-            ]);
-        } elseif ($transactionStatus == 'pending') {
-            // Do nothing
-        } elseif ($transactionStatus == 'deny' || $transactionStatus == 'expire' || $transactionStatus == 'cancel') {
-            $order->update([
-                'payment_status' => $transactionStatus === 'expire' ? 'expired' : 'failed',
-                'transaction_id' => $transactionId,
-            ]);
+
+            return $order;
+        } catch (\Exception $e) {
+            throw new \Exception('Failed to handle notification: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Set order as paid and trigger ticket generation
+     */
+    private function setOrderPaid(Order $order, $transactionId)
+    {
+        $order->update([
+            'payment_status' => 'paid',
+            'transaction_id' => $transactionId,
+            'paid_at' => now(),
+        ]);
 
         return $order;
+    }
+
+    /**
+     * Check transaction status from Midtrans
+     */
+    public function checkTransactionStatus($orderNumber)
+    {
+        try {
+            $status = \Midtrans\Transaction::status($orderNumber);
+            return $status;
+        } catch (\Exception $e) {
+            throw new \Exception('Failed to check transaction status: ' . $e->getMessage());
+        }
     }
 }

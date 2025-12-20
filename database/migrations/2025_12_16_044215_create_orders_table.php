@@ -21,7 +21,7 @@ return new class extends Migration
                 ->constrained('events')
                 ->onDelete('cascade');
             $table->decimal('total_amount', 15, 2);
-            $table->enum('payment_status', ['pending', 'paid', 'failed', 'expired', 'refunded'])
+            $table->enum('payment_status', ['pending', 'paid', 'failed', 'expired', 'cancelled', 'refunded'])
                 ->default('pending');
             $table->string('payment_method')->nullable();
             $table->string('payment_channel')->nullable();

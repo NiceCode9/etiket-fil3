@@ -13,7 +13,7 @@ Route::get('/events/{slug}', [EventController::class, 'show']);
 Route::post('/orders', [OrderController::class, 'store']);
 Route::get('/orders/{orderNumber}', [OrderController::class, 'show']);
 
-// Midtrans callback
+// Midtrans webhook callback
 Route::post('/midtrans/callback', [MidtransCallbackController::class, 'handle']);
 
 // Auth routes
