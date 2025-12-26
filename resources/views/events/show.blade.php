@@ -6,6 +6,24 @@
     <div class="py-12 bg-gray-50">
         <div class="container mx-auto px-4 max-w-7xl">
 
+            <!-- Timer Warning (Sticky Top) -->
+            <div id="timer-banner"
+                class="fixed top-16 left-0 right-0 z-40 bg-gradient-to-r from-red-600 to-red-700 text-white py-3 shadow-lg transition-all duration-300">
+                <div class="container mx-auto px-4">
+                    <div class="flex items-center justify-center gap-4">
+                        <i class="fas fa-clock text-2xl animate-pulse"></i>
+                        <div class="text-center">
+                            <p class="text-sm font-semibold">Selesaikan pembelian Anda dalam:</p>
+                            <p class="text-2xl font-bold" id="countdown-display">10:00</p>
+                        </div>
+                        <i class="fas fa-exclamation-triangle text-2xl animate-pulse"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spacer for fixed timer -->
+            <div class="h-20 mb-4"></div>
+
             <!-- Progress Steps -->
             <div class="mb-8">
                 <div class="flex items-center justify-center">
@@ -162,201 +180,221 @@
                                         </div>
                                     </div>
 
-                                    @php
-                                        $availableQuota = $ticketType->war_ticket
-                                            ? $ticketType->war_ticket->war_available_quota
-                                            : $ticketType->available_quota;
-                                    @endphp
-                                    @if ($availableQuota !== null)
-                                        <p class="text-xs text-gray-500 mb-3">
-                                            <i class="fas fa-users mr-1"></i>
-                                            Tersisa: <strong>{{ $availableQuota }}</strong> tiket
-                                        </p>
-                                    @endif
-
-                                    <div class="flex items-center justify-between bg-gray-50 rounded-lg p-2">
-                                        <button type="button" onclick="updateQuantity({{ $ticketType->id }}, -1)"
-                                            class="w-10 h-10 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 transition font-bold">
-                                            <i class="fas fa-minus text-sm"></i>
-                                        </button>
-                                        <span class="font-bold text-xl" id="qty-{{ $ticketType->id }}">0</span>
-                                        <button type="button" onclick="updateQuantity({{ $ticketType->id }}, 1)"
-                                            class="w-10 h-10 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 transition font-bold">
-                                            <i class="fas fa-plus text-sm"></i>
-                                        </button>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-gray-500">
+                                            <i class="fas fa-users mr-1"></i> Tersisa {{ $ticketType->stock }} tiket
+                                        </span>
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" onclick="updateQuantity({{ $ticketType->id }}, -1)"
+                                                class="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-lg flex items-center justify-center transition">
+                                                <i class="fas fa-minus text-xs"></i>
+                                            </button>
+                                            <span class="w-8 text-center font-bold" id="qty-{{ $ticketType->id }}">0</span>
+                                            <button type="button" onclick="updateQuantity({{ $ticketType->id }}, 1)"
+                                                class="w-8 h-8 bg-brand-yellow hover:bg-yellow-400 rounded-lg flex items-center justify-center transition">
+                                                <i class="fas fa-plus text-xs"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
-
-                            <div class="border-t border-gray-200 pt-4 mb-6">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-gray-600">Total Tiket</span>
-                                    <span class="font-semibold" id="total-tickets">0</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-lg font-bold text-slate-900">Total Bayar</span>
-                                    <span class="text-2xl font-bold text-brand-yellow" id="total-price">Rp 0</span>
-                                </div>
-                            </div>
-
-                            <button type="button" onclick="goToStep2()" id="btn-next-step"
-                                class="w-full bg-gray-300 text-gray-500 font-bold py-4 rounded-xl cursor-not-allowed transition"
-                                disabled>
-                                <i class="fas fa-arrow-right mr-2"></i> Lanjut ke Data Pembeli
-                            </button>
                         @else
-                            <div class="text-center py-8">
-                                <i class="fas fa-ticket-alt text-4xl text-gray-300 mb-3"></i>
-                                <p class="text-gray-500">Tiket belum tersedia</p>
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-ticket-alt text-4xl mb-3"></i>
+                                <p>Belum ada tiket yang tersedia</p>
                             </div>
                         @endif
+
+                        <!-- Summary -->
+                        <div class="border-t border-gray-200 pt-4 mt-6">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-600">Total Tiket</span>
+                                <span class="font-semibold" id="total-tickets">0</span>
+                            </div>
+                            <div class="flex justify-between text-lg font-bold mb-4">
+                                <span>Total</span>
+                                <span class="text-brand-yellow" id="total-price">Rp 0</span>
+                            </div>
+                            <button id="btn-next-step" onclick="goToStep2()" disabled
+                                class="w-full bg-gray-300 text-gray-500 font-bold py-4 rounded-xl cursor-not-allowed">
+                                Lanjut ke Data Pembeli
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- STEP 2: Customer Data Form -->
+            <!-- STEP 2: Customer Data -->
             <div id="step-2" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
                     <!-- LEFT: Form -->
                     <div class="lg:col-span-2">
                         <div class="bg-white rounded-2xl shadow-lg p-8">
-                            <div class="flex items-center justify-between mb-6">
-                                <h2 class="text-2xl font-bold text-slate-900">
-                                    <i class="fas fa-user-circle text-brand-yellow mr-2"></i> Data Pembeli
-                                </h2>
-                                <button type="button" onclick="goToStep1()"
-                                    class="text-sm text-blue-600 hover:text-blue-800 font-semibold">
-                                    <i class="fas fa-arrow-left mr-1"></i> Kembali
-                                </button>
-                            </div>
+                            <h2 class="text-2xl font-bold text-slate-900 mb-6">
+                                <i class="fas fa-user-edit text-brand-yellow mr-2"></i> Data Pembeli
+                            </h2>
 
-                            <form action="{{ route('checkout.process', $event) }}" method="POST" id="checkout-form">
+                            <form action="{{ route('checkout.process', $event->slug) }}" method="POST"
+                                id="checkout-form">
                                 @csrf
 
-                                <div class="mb-6">
-                                    <label class="block text-sm font-semibold text-slate-900 mb-2">
-                                        Nama Lengkap <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="text" name="full_name" required
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                                        placeholder="Masukkan nama lengkap"
-                                        value="{{ old('full_name', Auth::user()->name ?? '') }}">
-                                </div>
+                                <div id="hidden-ticket-inputs"></div>
 
-                                <div class="mb-6">
-                                    <label class="block text-sm font-semibold text-slate-900 mb-2">
-                                        Email <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="email" name="email" required
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                                        placeholder="email@example.com"
-                                        value="{{ old('email', Auth::user()->email ?? '') }}">
-                                    <p class="text-xs text-gray-500 mt-1">
-                                        <i class="fas fa-info-circle mr-1"></i>Tiket akan dikirim ke email ini
-                                    </p>
-                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Nama Lengkap <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="text" name="full_name" required value="{{ old('full_name') }}"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-yellow transition"
+                                            placeholder="Masukkan nama lengkap">
+                                    </div>
 
-                                <div class="mb-6">
-                                    <label class="block text-sm font-semibold text-slate-900 mb-2">
-                                        Nomor Telepon <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="tel" name="phone_number" required
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                                        placeholder="08xxxxxxxxxx" value="{{ old('phone_number') }}">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Email <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="email" name="email" required value="{{ old('email') }}"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-yellow transition"
+                                            placeholder="contoh@email.com">
+                                    </div>
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                     <div>
-                                        <label class="block text-sm font-semibold text-slate-900 mb-2">
-                                            Jenis Identitas <span class="text-red-500">*</span>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                            No. Telepon <span class="text-red-500">*</span>
                                         </label>
-                                        <select name="identity_type" required
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-yellow">
-                                            <option value="">Pilih Identitas</option>
-                                            <option value="ktp">KTP</option>
-                                            <option value="sim">SIM</option>
-                                            <option value="passport">Passport</option>
-                                            <option value="lainnya">Lainnya</option>
-                                        </select>
+                                        <input type="tel" name="phone_number" required
+                                            value="{{ old('phone_number') }}"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-yellow transition"
+                                            placeholder="08xxxxxxxxxx">
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-semibold text-slate-900 mb-2">
-                                            Nomor Identitas <span class="text-red-500">*</span>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Jenis Identitas <span class="text-red-500">*</span>
                                         </label>
-                                        <input type="text" name="identity_number" required
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                                            placeholder="Nomor identitas" value="{{ old('identity_number') }}">
+                                        <select name="identity_type" required
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-yellow transition">
+                                            <option value="">Pilih Jenis Identitas</option>
+                                            <option value="ktp" {{ old('identity_type') == 'ktp' ? 'selected' : '' }}>
+                                                KTP</option>
+                                            <option value="sim" {{ old('identity_type') == 'sim' ? 'selected' : '' }}>
+                                                SIM</option>
+                                            <option value="passport"
+                                                {{ old('identity_type') == 'passport' ? 'selected' : '' }}>Passport
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
 
-                                <!-- Hidden ticket data -->
-                                <div id="hidden-ticket-inputs"></div>
-
                                 <div class="mb-6">
-                                    <label class="flex items-start cursor-pointer">
-                                        <input type="checkbox" name="agree_terms" required
-                                            class="mt-1 rounded text-brand-yellow focus:ring-brand-yellow">
-                                        <span class="ml-3 text-sm text-gray-600">
-                                            Saya setuju dengan <a href="#"
-                                                class="text-blue-600 hover:underline">syarat dan ketentuan</a> yang berlaku
-                                        </span>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Nomor Identitas <span class="text-red-500">*</span>
                                     </label>
+                                    <input type="text" name="identity_number" required
+                                        value="{{ old('identity_number') }}"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-yellow transition"
+                                        placeholder="Masukkan nomor identitas">
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        <i class="fas fa-info-circle mr-1"></i> Nomor identitas diperlukan untuk verifikasi
+                                        di lokasi event
+                                    </p>
                                 </div>
 
-                                <button type="submit" id="pay-button"
-                                    class="w-full bg-brand-yellow hover:bg-yellow-400 text-black font-bold py-4 rounded-xl transition transform hover:scale-105 shadow-lg">
-                                    <i class="fas fa-credit-card mr-2"></i> Lanjut ke Pembayaran
-                                </button>
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                                    <div class="flex items-start">
+                                        <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-3"></i>
+                                        <div class="text-sm text-yellow-800">
+                                            <p class="font-semibold mb-1">Penting!</p>
+                                            <p>Pastikan data yang Anda masukkan sudah benar. Data ini akan digunakan untuk
+                                                verifikasi tiket dan tidak dapat diubah setelah pembayaran.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-4">
+                                    <button type="button" onclick="goToStep1()"
+                                        class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 rounded-xl transition">
+                                        <i class="fas fa-arrow-left mr-2"></i> Kembali
+                                    </button>
+                                    <button type="submit" id="pay-button"
+                                        class="flex-1 bg-brand-yellow hover:bg-yellow-400 text-black font-bold py-4 rounded-xl transition transform hover:scale-105 shadow-lg">
+                                        <i class="fas fa-lock mr-2"></i> Lanjut ke Pembayaran
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
 
-                    <!-- RIGHT: Order Summary -->
+                    <!-- RIGHT: Summary -->
                     <div class="lg:col-span-1">
                         <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-28">
                             <h3 class="font-bold text-xl mb-6 text-slate-900">
                                 <i class="fas fa-receipt text-brand-yellow mr-2"></i> Ringkasan Pesanan
                             </h3>
 
-                            <div class="mb-6 pb-6 border-b border-gray-200">
-                                <h4 class="font-bold text-lg text-slate-900 mb-2">{{ $event->name }}</h4>
-                                <p class="text-sm text-gray-600">
-                                    <i class="far fa-calendar mr-1"></i>
-                                    {{ $event->event_date->format('d F Y') }}
-                                </p>
-                                <p class="text-sm text-gray-600">
-                                    <i class="fas fa-map-marker-alt mr-1"></i>
-                                    {{ $event->venue }}
-                                </p>
+                            <div class="mb-4 pb-4 border-b border-gray-200">
+                                <p class="text-sm text-gray-600 mb-1">Event</p>
+                                <p class="font-semibold text-slate-900">{{ $event->name }}</p>
                             </div>
 
-                            <div class="space-y-3 mb-6 pb-6 border-b border-gray-200" id="summary-items"></div>
-
-                            <div class="flex justify-between items-center mb-6">
-                                <span class="text-lg font-bold text-slate-900">Total Pembayaran</span>
-                                <span class="text-2xl font-bold text-brand-yellow" id="summary-total">Rp 0</span>
+                            <div class="space-y-3 mb-4 pb-4 border-b border-gray-200" id="summary-items">
+                                <!-- Will be populated by JS -->
                             </div>
 
-                            <div class="bg-gray-50 rounded-xl p-4">
-                                <p class="text-xs text-gray-600 mb-2 font-semibold">
-                                    <i class="fas fa-info-circle text-blue-500 mr-1"></i> Metode Pembayaran
-                                </p>
-                                <p class="text-xs text-gray-500">
-                                    Pembayaran menggunakan Midtrans dengan berbagai pilihan metode
-                                </p>
+                            <div class="flex justify-between text-lg font-bold mb-4">
+                                <span>Total Bayar</span>
+                                <span class="text-brand-yellow" id="summary-total">Rp 0</span>
+                            </div>
+
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div class="flex items-start">
+                                    <i class="fas fa-shield-alt text-blue-600 mt-1 mr-3"></i>
+                                    <div class="text-xs text-blue-800">
+                                        <p class="font-semibold mb-1">Transaksi Aman</p>
+                                        <p>Pembayaran Anda dilindungi oleh sistem keamanan Midtrans</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+        </div>
+    </div>
+
+    <!-- Timeout Modal -->
+    <div id="timeout-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md mx-4 p-8 text-center">
+            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-clock text-red-600 text-4xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-900 mb-4">Waktu Habis!</h3>
+            <p class="text-gray-600 mb-6">
+                Maaf, waktu pembelian Anda telah habis. Anda akan diarahkan ke halaman utama.
+            </p>
+            <div class="text-3xl font-bold text-red-600 mb-6" id="redirect-countdown">5</div>
+            <button onclick="redirectToHome()"
+                class="w-full bg-brand-yellow hover:bg-yellow-400 text-black font-bold py-3 px-6 rounded-xl transition">
+                Kembali ke Beranda
+            </button>
         </div>
     </div>
 @endsection
 
 @push('scripts')
     <script>
+        // Timer Configuration
+        const TIMER_DURATION = 5 * 60; // 5 minutes in seconds
+        let timeRemaining = TIMER_DURATION;
+        let timerInterval;
+        let redirectCountdown = 5;
+        let isTimerActive = true;
+
+        // Ticket data
         const ticketPrices = {
             @foreach ($event->ticketTypes as $ticketType)
                 {{ $ticketType->id }}: {{ $ticketType->current_price }},
@@ -369,12 +407,77 @@
             @endforeach
         };
 
-        let quantities = {
+        const quantities = {
             @foreach ($event->ticketTypes as $ticketType)
                 {{ $ticketType->id }}: 0,
             @endforeach
         };
 
+        // Format Rupiah
+        function formatRupiah(amount) {
+            return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        // Format time display
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Start Timer
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (!isTimerActive) return;
+
+                timeRemaining--;
+                updateTimerDisplay();
+
+                // Change color when time is low
+                const banner = document.getElementById('timer-banner');
+                if (timeRemaining <= 60) { // Last minute
+                    banner.className =
+                        'fixed top-16 left-0 right-0 z-40 bg-gradient-to-r from-red-700 to-red-900 text-white py-3 shadow-lg transition-all duration-300';
+                } else if (timeRemaining <= 180) { // Last 3 minutes
+                    banner.className =
+                        'fixed top-16 left-0 right-0 z-40 bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 shadow-lg transition-all duration-300';
+                }
+
+                // Time's up!
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    showTimeoutModal();
+                }
+            }, 1000);
+        }
+
+        // Update timer display
+        function updateTimerDisplay() {
+            document.getElementById('countdown-display').textContent = formatTime(timeRemaining);
+        }
+
+        // Show timeout modal
+        function showTimeoutModal() {
+            isTimerActive = false;
+            document.getElementById('timeout-modal').classList.remove('hidden');
+
+            const redirectInterval = setInterval(() => {
+                redirectCountdown--;
+                document.getElementById('redirect-countdown').textContent = redirectCountdown;
+
+                if (redirectCountdown <= 0) {
+                    clearInterval(redirectInterval);
+                    redirectToHome();
+                }
+            }, 1000);
+        }
+
+        // Redirect to home
+        function redirectToHome() {
+            window.location.href = "{{ route('home') }}";
+        }
+
+        // Ticket quantity functions
         function updateQuantity(ticketId, change) {
             quantities[ticketId] = Math.max(0, quantities[ticketId] + change);
             updateUI();
@@ -517,17 +620,58 @@
             });
         }
 
-        // Form submission
+        // Form submission - stop timer
         document.addEventListener('DOMContentLoaded', function() {
+            // Start timer when page loads
+            startTimer();
+            updateUI();
+
             const form = document.getElementById('checkout-form');
             if (form) {
                 form.addEventListener('submit', function() {
+                    // Stop timer when form is submitted
+                    isTimerActive = false;
+                    clearInterval(timerInterval);
+
                     const btn = document.getElementById('pay-button');
                     btn.disabled = true;
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
                 });
             }
-            updateUI();
+        });
+
+        // Warn user before leaving page
+        window.addEventListener('beforeunload', function(e) {
+            if (isTimerActive) {
+                const totalTickets = Object.values(quantities).reduce((a, b) => a + b, 0);
+                if (totalTickets > 0) {
+                    e.preventDefault();
+                    e.returnValue =
+                        'Anda memiliki tiket yang belum selesai dibeli. Yakin ingin meninggalkan halaman?';
+                    return e.returnValue;
+                }
+            }
         });
     </script>
 @endpush
+
+@push('styles')
+    <style>
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+@endpush
+@endsection

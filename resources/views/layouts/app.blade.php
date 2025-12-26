@@ -33,13 +33,8 @@
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
-                <a href="{{ route('home') }}" class="flex-shrink-0">
-                    <div class="flex items-center gap-2">
-                        <div class="text-white font-bold text-2xl flex items-center gap-1">
-                            <span class="bg-brand-yellow text-black px-2 py-1 rounded transform -skew-x-12">U</span>
-                            <span>ntix</span>
-                        </div>
-                    </div>
+                <a href="{{ route('home') }}" class="flex-shrink-0 flex items-center">
+                    <img src="{{ asset('logo.png') }}" alt="Untix Logo" class="h-10 w-auto">
                 </a>
 
                 <!-- Desktop Menu -->
@@ -53,11 +48,11 @@
                         Jelajah
                     </a>
                     <a href="{{ route('tracking.index') }}"
-                        class="px-4 py-2 rounded-full text-white hover:text-brand-yellow font-medium transition">
+                        class="px-4 py-2 rounded-full {{ request()->routeIs('tracking.*') ? 'bg-brand-yellow text-black' : 'text-white hover:text-brand-yellow' }} font-medium transition">
                         Tracking Pesanan
                     </a>
-                    <a href="#"
-                        class="px-4 py-2 rounded-full text-white hover:text-brand-yellow font-medium transition">
+                    <a href="{{ route('about') }}"
+                        class="px-4 py-2 rounded-full {{ request()->routeIs('about') ? 'bg-brand-yellow text-black' : 'text-white hover:text-brand-yellow' }} font-medium transition">
                         Tentang
                     </a>
                     <a href="#"
@@ -114,7 +109,8 @@
                     class="block px-3 py-2 text-base font-medium rounded-lg {{ request()->routeIs('events.*') ? 'bg-brand-yellow text-black' : 'text-white hover:bg-gray-700' }}">
                     Jelajah
                 </a>
-                <a href="#" class="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700 rounded-lg">
+                <a href="{{ route('about') }}"
+                    class="block px-3 py-2 text-base font-medium{{ request()->routeIs('about') ? 'bg-brand-yellow text-black' : 'text-white hover:bg-gray-700' }} rounded-lg">
                     Tentang
                 </a>
                 <a href="#" class="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700 rounded-lg">
@@ -160,11 +156,10 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                 <!-- Brand -->
                 <div>
-                    <div class="text-white font-bold text-2xl flex items-center gap-1 mb-4">
-                        <span class="bg-brand-yellow text-black px-2 py-1 rounded transform -skew-x-12">U</span>
-                        <span>ntix</span>
-                    </div>
-                    <p class="text-sm text-gray-400">Platform ticketing event terpercaya di Indonesia.</p>
+                    <a href="{{ route('home') }}" class="flex-shrink-0 flex items-center">
+                        <img src="{{ asset('logo.png') }}" alt="Untix Logo" class="h-10 w-auto">
+                    </a>
+                    {{-- <p class="text-sm text-gray-400">Platform ticketing event terpercaya di Indonesia.</p> --}}
                 </div>
 
                 <!-- Quick Links -->

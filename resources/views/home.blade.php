@@ -6,10 +6,10 @@
     <!-- Hero Section -->
     {{-- <section class="relative bg-slate-900 text-white py-20 lg:py-32 overflow-hidden"> --}}
     <section class="relative text-white py-20 lg:py-32 overflow-hidden bg-cover bg-center"
-        style="background-image: url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?ixlib=rb-4.0.1&auto=format&fit=crop&w=1920&q=80');">
+        style="background-image: url('{{ asset('bg-landing.jpg') }}');">
 
         <!-- Overlay gelap -->
-        <div class="absolute inset-0 bg-slate-900/80 z-0"></div>
+        <div class="absolute inset-0 bg-slate-900/45 z-0"></div>
 
         <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
             <div class="absolute -top-20 -right-20 w-96 h-96 bg-brand-yellow opacity-10 rounded-full blur-3xl">
@@ -18,18 +18,18 @@
             </div>
         </div>
         <div class="container mx-auto px-4 relative z-10 text-center">
-            <span
+            {{-- <span
                 class="inline-block py-1 px-3 rounded-full bg-slate-800 border border-slate-700 text-brand-yellow text-sm font-semibold mb-6 animate-bounce">
                 🎉 Platform Ticketing #1 di Indonesia
-            </span>
-            <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+            </span> --}}
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-black">
                 Partner Terbaik untuk <br />
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-yellow to-yellow-200">Segala
+                <span class="text-black bg-clip-text bg-gradient-to-r from-brand-yellow to-yellow-200">Segala
                     Jenis Event</span>
             </h1>
-            <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10">
+            {{-- <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10">
                 Temukan ribuan konser, workshop, dan festival seru.
-            </p>
+            </p> --}}
 
             <!-- Search Bar -->
             <form action="{{ route('events.index') }}" method="GET"

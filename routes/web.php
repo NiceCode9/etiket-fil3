@@ -8,6 +8,7 @@ use App\Http\Controllers\TrackingController;
 
 // Home
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/about', [HomeController::class, 'about'])->name('about');
 
 // Events
 Route::get('/events', [WebEventController::class, 'index'])->name('events.index');
