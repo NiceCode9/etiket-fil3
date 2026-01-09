@@ -13,29 +13,20 @@ class EventController extends Controller
             ->published()
             ->upcoming();
 
-        // Filter: Search
+        // Filter: Search (by name, description, venue)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('title', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('artist', 'like', "%{$search}%");
+                    ->orWhere('venue', 'like', "%{$search}%");
             });
         }
 
-        // Filter: Category (multiple)
-        if ($request->filled('category')) {
-            $categories = is_array($request->category) ? $request->category : [$request->category];
-            $query->whereIn('category', $categories);
-        }
-
-        // Filter: Location
+        // Filter: Location (mapped to venue)
         if ($request->filled('location')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('location', 'like', "%{$request->location}%")
-                    ->orWhere('city', 'like', "%{$request->location}%");
-            });
+            $location = $request->location;
+            $query->where('venue', 'like', "%{$location}%");
         }
 
         // Filter: Price Range

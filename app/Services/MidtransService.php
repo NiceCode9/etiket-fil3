@@ -74,14 +74,16 @@ class MidtransService
     {
         try {
             // Create notification instance
-            $notification = new Notification();
+            $notification = new Notification($data);
 
             $transactionStatus = $notification->transaction_status;
             $fraudStatus = $notification->fraud_status;
             $orderId = $notification->order_id;
             $transactionId = $notification->transaction_id;
 
-            $order = Order::where('order_number', $orderId)->firstOrFail();
+            $order = Order::with(['orderItems.tickets'])
+                ->where('order_number', $orderId)
+                ->firstOrFail();
 
             // Handle different transaction statuses
             if ($transactionStatus == 'capture') {

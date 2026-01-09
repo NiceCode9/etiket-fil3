@@ -142,7 +142,7 @@ class InvoiceService
         $pdf->Cell(0, 6, ': ' . \Carbon\Carbon::parse($order->event->event_date)->format('d M Y, H:i') . ' WIB', 0, 1);
 
         $pdf->Cell(50, 6, 'Location', 0, 0);
-        $pdf->MultiCell(0, 6, ': ' . $order->event->location);
+        $pdf->MultiCell(0, 6, ': ' . ($order->event->venue ?? '-'));
 
         $pdf->Ln(5);
     }
