@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             RoleSeeder::class,
-            UserSeeder::class,
+            // UserSeeder::class,
             EventSeeder::class,
             TicketTypeSeeder::class,
             WarTicketSeeder::class,
@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
             OrderSeeder::class,
             OrderItemSeeder::class,
             TicketSeeder::class,
-            ScanLogSeeder::class,
+            // ScanLogSeeder::class,
         ]);
     }
 }

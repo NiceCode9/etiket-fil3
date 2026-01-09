@@ -6,15 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\HasTenant;
 
 class Order extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasTenant;
 
     protected $fillable = [
         'order_number',
         'customer_id',
         'event_id',
+        'tenant_id',
         'total_amount',
         'payment_status',
         'payment_method',
@@ -45,6 +47,14 @@ class Order extends Model
             // Set expired_at to 24 hours from now if not set
             if (empty($order->expired_at)) {
                 $order->expired_at = now()->addHours(24);
+            }
+
+            // Auto-set tenant_id from event if not set
+            if (empty($order->tenant_id) && $order->event_id) {
+                $event = Event::find($order->event_id);
+                if ($event && $event->tenant_id) {
+                    $order->tenant_id = $event->tenant_id;
+                }
             }
         });
     }

@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\HasTenant;
 use Illuminate\Support\Str;
 
 class Event extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasTenant;
 
     protected $fillable = [
         'name',
@@ -20,6 +22,7 @@ class Event extends Model
         'event_end_date',
         'poster_image',
         'status',
+        'tenant_id',
     ];
 
     protected $casts = [

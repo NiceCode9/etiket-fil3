@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -22,6 +24,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'tenant_id',
     ];
 
     /**
@@ -45,5 +48,31 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function scans(): HasMany
+    {
+        return $this->hasMany(Scan::class);
+    }
+
+    /**
+     * Check if user is super admin
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('super_admin');
+    }
+
+    /**
+     * Check if user belongs to a tenant
+     */
+    public function belongsToTenant(): bool
+    {
+        return !is_null($this->tenant_id);
     }
 }

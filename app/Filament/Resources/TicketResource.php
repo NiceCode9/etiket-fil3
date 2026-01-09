@@ -5,13 +5,17 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TicketResource\Pages;
 use App\Filament\Resources\TicketResource\RelationManagers;
 use App\Models\Ticket;
+use App\Exports\TicketsExport;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Auth;
 
 class TicketResource extends Resource
 {
@@ -110,6 +114,36 @@ class TicketResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+            ])
+            ->headerActions([
+                Action::make('exportExcel')
+                    ->label('Export Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->action(function () {
+                        $user = Auth::user();
+                        $tenantId = $user->hasRole('super_admin') ? null : $user->tenant_id;
+                        
+                        return Excel::download(
+                            new TicketsExport($tenantId),
+                            'tickets_' . date('Y-m-d_His') . '.xlsx'
+                        );
+                    }),
+                
+                Action::make('exportPdf')
+                    ->label('Export PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('danger')
+                    ->action(function () {
+                        $user = Auth::user();
+                        $tenantId = $user->hasRole('super_admin') ? null : $user->tenant_id;
+                        
+                        return Excel::download(
+                            new TicketsExport($tenantId),
+                            'tickets_' . date('Y-m-d_His') . '.pdf',
+                            \Maatwebsite\Excel\Excel::DOMPDF
+                        );
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

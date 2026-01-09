@@ -3,60 +3,86 @@
 namespace App\Filament\Pages;
 
 use App\Models\Ticket;
+use App\Models\Scan;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 
 class WristbandValidator extends Page
 {
     protected static string $view = 'filament.pages.wristband-validator';
-    protected static ?string $navigationIcon = 'heroicon-o-qr-code';
+    protected static ?string $navigationIcon = 'heroicon-o-check-badge';
     protected static ?string $navigationGroup = 'Scanning';
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
-    public $qrCode = '';
+    public $wristbandCode = '';
     public $ticket = null;
 
-    public function scan()
+    public function validateWristband()
     {
         try {
-            $this->ticket = Ticket::where('qr_code', $this->qrCode)
-                ->with(['customer', 'event', 'ticketType'])
-                ->firstOrFail();
-
-            if (!$this->ticket->canScanForWristband()) {
+            $user = auth()->user();
+            
+            if (empty($this->wristbandCode)) {
                 Notification::make()
-                    ->title('Ticket Already Scanned')
+                    ->title('Kode Wristband Kosong')
+                    ->body('Silakan scan atau masukkan kode wristband')
+                    ->warning()
+                    ->send();
+                return;
+            }
+            
+            // Find ticket by wristband code with tenant scoping
+            $query = Ticket::where('wristband_code', $this->wristbandCode)
+                ->with(['customer', 'event', 'ticketType']);
+            
+            // Apply tenant scope for non-super-admin users
+            if (!$user->hasRole('super_admin') && $user->tenant_id) {
+                $query->where('tenant_id', $user->tenant_id);
+            }
+            
+            $this->ticket = $query->firstOrFail();
+
+            if (!$this->ticket->canValidateWristband()) {
+                Notification::make()
+                    ->title('Wristband Tidak Dapat Divalidasi')
+                    ->body('Status tiket: ' . $this->ticket->status)
                     ->danger()
                     ->send();
                 return;
             }
 
-            // Generate wristband code
-            $wristbandCode = 'WB-' . strtoupper(substr(uniqid(), -10));
-
+            // Update ticket status
             $this->ticket->update([
-                'status' => 'scanned_for_wristband',
-                'wristband_code' => $wristbandCode,
-                'scanned_for_wristband_at' => now(),
-                'scanned_for_wristband_by' => auth()->id(),
+                'status' => 'used',
+                'wristband_validated_at' => now(),
+                'wristband_validated_by' => $user->id,
             ]);
 
-            // Log scan
-            $this->ticket->scanLogs()->create([
-                'scan_type' => 'qr_for_wristband',
-                'scanned_by' => auth()->id(),
+            // Create scan record
+            Scan::create([
+                'user_id' => $user->id,
+                'ticket_id' => $this->ticket->id,
+                'tenant_id' => $this->ticket->tenant_id,
+                'scan_type' => 'wristband_validation',
                 'scanned_at' => now(),
-                'status' => 'success',
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
             ]);
 
             Notification::make()
-                ->title('QR Code Scanned Successfully')
+                ->title('Wristband Berhasil Divalidasi')
+                ->body('Tiket: ' . $this->ticket->ticket_number)
                 ->success()
                 ->send();
 
             $this->ticket->refresh();
+            
+            // Dispatch browser event to stop camera
+            $this->dispatch('validate-success');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Notification::make()
+                ->title('Tiket Tidak Ditemukan')
+                ->body('Kode wristband tidak valid atau tidak ditemukan')
+                ->danger()
+                ->send();
         } catch (\Exception $e) {
             Notification::make()
                 ->title('Error')
@@ -68,11 +94,12 @@ class WristbandValidator extends Page
 
     public function resetScan()
     {
-        $this->reset(['qrCode', 'ticket']);
+        $this->reset(['wristbandCode', 'ticket']);
     }
 
     public static function canAccess(): bool
     {
-        return auth()->user()->hasAnyRole(['super_admin', 'qr_scanner']);
+        $user = auth()->user();
+        return $user && ($user->hasRole('super_admin') || $user->hasRole('wristband_validator'));
     }
 }

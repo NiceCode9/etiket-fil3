@@ -6,11 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\HasTenant;
 use Illuminate\Support\Str;
 
 class Ticket extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasTenant;
 
     protected $fillable = [
         'ticket_number',
@@ -18,6 +19,7 @@ class Ticket extends Model
         'customer_id',
         'event_id',
         'ticket_type_id',
+        'tenant_id',
         'qr_code',
         'qr_code_path',
         'status',
@@ -45,6 +47,14 @@ class Ticket extends Model
 
             if (empty($ticket->qr_code)) {
                 $ticket->qr_code = Str::uuid()->toString();
+            }
+
+            // Auto-set tenant_id from event if not set
+            if (empty($ticket->tenant_id) && $ticket->event_id) {
+                $event = Event::find($ticket->event_id);
+                if ($event && $event->tenant_id) {
+                    $ticket->tenant_id = $event->tenant_id;
+                }
             }
         });
     }
@@ -79,9 +89,9 @@ class Ticket extends Model
         return $this->belongsTo(User::class, 'wristband_validated_by');
     }
 
-    public function scanLogs(): HasMany
+    public function scans(): HasMany
     {
-        return $this->hasMany(ScanLog::class);
+        return $this->hasMany(Scan::class);
     }
 
     // Check if ticket can be scanned for wristband
