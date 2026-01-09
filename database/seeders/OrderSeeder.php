@@ -9,11 +9,18 @@ class OrderSeeder extends Seeder
 {
     public function run(): void
     {
+        // Get events to get their tenant_id
+        $event1 = \App\Models\Event::find(1);
+        $event2 = \App\Models\Event::find(2);
+        $event3 = \App\Models\Event::find(3);
+        $event4 = \App\Models\Event::find(4);
+
         // Paid orders
         Order::create([
             'order_number' => 'ORD-20241215-ABC123',
             'customer_id' => 1,
             'event_id' => 1,
+            'tenant_id' => $event1?->tenant_id,
             'total_amount' => 1500000,
             'payment_status' => 'paid',
             'payment_method' => 'credit_card',
@@ -28,6 +35,7 @@ class OrderSeeder extends Seeder
             'order_number' => 'ORD-20241216-DEF456',
             'customer_id' => 2,
             'event_id' => 1,
+            'tenant_id' => $event1?->tenant_id,
             'total_amount' => 2250000,
             'payment_status' => 'paid',
             'payment_method' => 'bank_transfer',
@@ -42,6 +50,7 @@ class OrderSeeder extends Seeder
             'order_number' => 'ORD-20241216-GHI789',
             'customer_id' => 3,
             'event_id' => 2,
+            'tenant_id' => $event2?->tenant_id,
             'total_amount' => 500000,
             'payment_status' => 'paid',
             'payment_method' => 'e_wallet',
@@ -56,6 +65,7 @@ class OrderSeeder extends Seeder
             'order_number' => 'ORD-20241217-JKL012',
             'customer_id' => 4,
             'event_id' => 3,
+            'tenant_id' => $event3?->tenant_id,
             'total_amount' => 150000,
             'payment_status' => 'paid',
             'payment_method' => 'e_wallet',
@@ -70,6 +80,7 @@ class OrderSeeder extends Seeder
             'order_number' => 'ORD-20241217-MNO345',
             'customer_id' => 5,
             'event_id' => 4,
+            'tenant_id' => $event4?->tenant_id,
             'total_amount' => 600000,
             'payment_status' => 'paid',
             'payment_method' => 'qris',
@@ -85,6 +96,7 @@ class OrderSeeder extends Seeder
             'order_number' => 'ORD-20241217-PQR678',
             'customer_id' => 6,
             'event_id' => 1,
+            'tenant_id' => $event1?->tenant_id,
             'total_amount' => 750000,
             'payment_status' => 'pending',
             'payment_method' => 'bank_transfer',
@@ -99,6 +111,7 @@ class OrderSeeder extends Seeder
             'order_number' => 'ORD-20241217-STU901',
             'customer_id' => 7,
             'event_id' => 2,
+            'tenant_id' => $event2?->tenant_id,
             'total_amount' => 200000,
             'payment_status' => 'pending',
             'payment_method' => 'e_wallet',
@@ -114,6 +127,7 @@ class OrderSeeder extends Seeder
             'order_number' => 'ORD-20241215-VWX234',
             'customer_id' => 8,
             'event_id' => 1,
+            'tenant_id' => $event1?->tenant_id,
             'total_amount' => 1500000,
             'payment_status' => 'expired',
             'payment_method' => 'credit_card',
@@ -129,6 +143,7 @@ class OrderSeeder extends Seeder
             'order_number' => 'ORD-20241216-YZA567',
             'customer_id' => 9,
             'event_id' => 3,
+            'tenant_id' => $event3?->tenant_id,
             'total_amount' => 50000,
             'payment_status' => 'failed',
             'payment_method' => 'bank_transfer',
@@ -144,6 +159,7 @@ class OrderSeeder extends Seeder
             'order_number' => 'ORD-20241217-BCD890',
             'customer_id' => 10,
             'event_id' => 1,
+            'tenant_id' => $event1?->tenant_id,
             'total_amount' => 700000,
             'payment_status' => 'paid',
             'payment_method' => 'e_wallet',

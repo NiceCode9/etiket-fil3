@@ -9,6 +9,11 @@ class EventSeeder extends Seeder
 {
     public function run(): void
     {
+        // Get tenant IDs (assuming TenantSeeder runs first)
+        $tenant1 = \App\Models\Tenant::where('slug', 'sample-tenant')->first();
+        $tenant2 = \App\Models\Tenant::where('slug', 'music-festival-org')->first();
+        $tenant3 = \App\Models\Tenant::where('slug', 'tech-summit-org')->first();
+
         Event::create([
             'name' => 'Surabaya Music Festival 2025',
             'slug' => 'surabaya-music-festival-2025',
@@ -18,6 +23,7 @@ class EventSeeder extends Seeder
             'event_end_date' => now()->addMonths(2)->addDays(2),
             'poster_image' => 'events/music-festival.jpg',
             'status' => 'published',
+            'tenant_id' => $tenant2?->id ?? $tenant1?->id,
         ]);
 
         Event::create([
@@ -29,6 +35,7 @@ class EventSeeder extends Seeder
             'event_end_date' => now()->addMonths(3)->addDays(1),
             'poster_image' => 'events/tech-summit.jpg',
             'status' => 'published',
+            'tenant_id' => $tenant3?->id ?? $tenant1?->id,
         ]);
 
         Event::create([
@@ -40,6 +47,7 @@ class EventSeeder extends Seeder
             'event_end_date' => now()->addMonth()->addDays(3),
             'poster_image' => 'events/food-carnival.jpg',
             'status' => 'published',
+            'tenant_id' => $tenant1?->id,
         ]);
 
         Event::create([
@@ -51,6 +59,7 @@ class EventSeeder extends Seeder
             'event_end_date' => now()->addWeeks(3),
             'poster_image' => 'events/comedy-night.jpg',
             'status' => 'published',
+            'tenant_id' => $tenant1?->id,
         ]);
 
         Event::create([
@@ -62,6 +71,7 @@ class EventSeeder extends Seeder
             'event_end_date' => now()->addMonths(6),
             'poster_image' => null,
             'status' => 'draft',
+            'tenant_id' => $tenant1?->id,
         ]);
     }
 }

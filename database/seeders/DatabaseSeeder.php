@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $this->call([
+            TenantSeeder::class,
             RoleSeeder::class,
             // UserSeeder::class,
             EventSeeder::class,
@@ -27,6 +28,7 @@ class DatabaseSeeder extends Seeder
             OrderSeeder::class,
             OrderItemSeeder::class,
             TicketSeeder::class,
+            ScanSeeder::class,
             // ScanLogSeeder::class,
         ]);
     }

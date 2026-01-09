@@ -24,16 +24,20 @@ class RoleSeeder extends Seeder
         $qrScanner = Role::firstOrCreate(['name' => 'qr_scanner']);
         $wristbandValidator = Role::firstOrCreate(['name' => 'wristband_validator']);
 
-        // Create a sample tenant
-        $tenant = Tenant::firstOrCreate(
-            ['slug' => 'sample-tenant'],
-            [
+        // Get sample tenant (should be created by TenantSeeder)
+        $tenant = Tenant::where('slug', 'sample-tenant')->first();
+        
+        if (!$tenant) {
+            // Fallback: create tenant if TenantSeeder hasn't run
+            $tenant = Tenant::create([
+                'slug' => 'sample-tenant',
                 'name' => 'Sample Tenant',
                 'email' => 'tenant@example.com',
                 'phone' => '081234567890',
+                'address' => 'Jl. Sample No. 123, Surabaya',
                 'is_active' => true,
-            ]
-        );
+            ]);
+        }
 
         // Create super admin user (no tenant)
         $superAdminUser = User::firstOrCreate(

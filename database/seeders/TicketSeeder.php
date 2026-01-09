@@ -12,6 +12,12 @@ class TicketSeeder extends Seeder
 {
     public function run(): void
     {
+        // Get events to get their tenant_id
+        $event1 = \App\Models\Event::find(1);
+        $event2 = \App\Models\Event::find(2);
+        $event3 = \App\Models\Event::find(3);
+        $event4 = \App\Models\Event::find(4);
+
         // Order 1 - 2 VIP tickets (Active)
         for ($i = 1; $i <= 2; $i++) {
             $ticket = Ticket::create([
@@ -20,6 +26,7 @@ class TicketSeeder extends Seeder
                 'customer_id' => 1,
                 'event_id' => 1,
                 'ticket_type_id' => 3,
+                'tenant_id' => $event1?->tenant_id,
                 'qr_code' => Str::uuid()->toString(),
                 'qr_code_path' => null,
                 'status' => 'active',
@@ -49,6 +56,7 @@ class TicketSeeder extends Seeder
             'customer_id' => 2,
             'event_id' => 1,
             'ticket_type_id' => 2,
+            'tenant_id' => $event1?->tenant_id,
             'qr_code' => Str::uuid()->toString(),
             'qr_code_path' => null,
             'status' => 'scanned_for_wristband',
@@ -73,6 +81,7 @@ class TicketSeeder extends Seeder
                 'customer_id' => 2,
                 'event_id' => 1,
                 'ticket_type_id' => 2,
+                'tenant_id' => $event1?->tenant_id,
                 'qr_code' => Str::uuid()->toString(),
                 'qr_code_path' => null,
                 'status' => 'active',
@@ -98,6 +107,7 @@ class TicketSeeder extends Seeder
             'customer_id' => 3,
             'event_id' => 2,
             'ticket_type_id' => 5,
+            'tenant_id' => $event2?->tenant_id,
             'qr_code' => Str::uuid()->toString(),
             'qr_code_path' => null,
             'status' => 'used',
@@ -122,6 +132,7 @@ class TicketSeeder extends Seeder
             'customer_id' => 4,
             'event_id' => 3,
             'ticket_type_id' => 7,
+            'tenant_id' => $event3?->tenant_id,
             'qr_code' => Str::uuid()->toString(),
             'qr_code_path' => null,
             'status' => 'active',
@@ -147,6 +158,7 @@ class TicketSeeder extends Seeder
                 'customer_id' => 5,
                 'event_id' => 4,
                 'ticket_type_id' => 8,
+                'tenant_id' => $event4?->tenant_id,
                 'qr_code' => Str::uuid()->toString(),
                 'qr_code_path' => null,
                 'status' => 'active',
@@ -172,6 +184,7 @@ class TicketSeeder extends Seeder
             'customer_id' => 10,
             'event_id' => 1,
             'ticket_type_id' => 1,
+            'tenant_id' => $event1?->tenant_id,
             'qr_code' => Str::uuid()->toString(),
             'qr_code_path' => null,
             'status' => 'used',
@@ -195,6 +208,7 @@ class TicketSeeder extends Seeder
             'customer_id' => 10,
             'event_id' => 1,
             'ticket_type_id' => 1,
+            'tenant_id' => $event1?->tenant_id,
             'qr_code' => Str::uuid()->toString(),
             'qr_code_path' => null,
             'status' => 'active',

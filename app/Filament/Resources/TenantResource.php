@@ -118,12 +118,24 @@ class TenantResource extends Resource
             ->defaultSort('created_at', 'desc');
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\UsersRelationManager::class,
+            RelationManagers\EventsRelationManager::class,
+            RelationManagers\OrdersRelationManager::class,
+            RelationManagers\TicketsRelationManager::class,
+            RelationManagers\ScansRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListTenants::route('/'),
             'create' => Pages\CreateTenant::route('/create'),
             'edit' => Pages\EditTenant::route('/{record}/edit'),
+            'manage' => Pages\ManageTenants::route('/manage'),
         ];
     }
 }
