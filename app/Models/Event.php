@@ -27,6 +27,11 @@ class Event extends Model
         'event_end_date' => 'datetime',
     ];
 
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
     // Auto-generate slug
     protected static function boot()
     {
