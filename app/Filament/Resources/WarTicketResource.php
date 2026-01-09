@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\WarTicketResource\Pages;
 use App\Filament\Resources\WarTicketResource\RelationManagers;
 use App\Models\WarTicket;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -99,6 +100,27 @@ class WarTicketResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = Filament::auth()->user();
+
+        // Super admin dapat melihat semua data
+        if ($user && $user->hasRole('super_admin')) {
+            return $query;
+        }
+
+        // Tenant hanya dapat melihat war ticket untuk event di tenant-nya
+        if ($user && $user->tenant_id) {
+            $query->whereHas('ticketType.event', function (Builder $eventQuery) use ($user) {
+                $eventQuery->where('tenant_id', $user->tenant_id);
+            });
+        }
+
+        return $query;
     }
 
     public static function getPages(): array

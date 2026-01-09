@@ -5,31 +5,31 @@ namespace App\Filament\Widgets;
 use App\Models\Tenant;
 use App\Models\Order;
 use Filament\Widgets\ChartWidget;
-use Illuminate\Support\Number;
 
 class TopTenantsChartWidget extends ChartWidget
 {
     protected static ?string $heading = 'Top 10 Tenants (Revenue)';
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 6;
     protected static ?string $maxHeight = '400px';
+    protected static ?string $pollingInterval = '30s';
 
     protected function getData(): array
     {
-        $tenants = Tenant::withCount(['orders' => function ($query) {
-            $query->where('payment_status', 'paid');
-        }])->get();
+        // Get all tenants with their revenue
+        $tenants = Tenant::withoutGlobalScopes()
+            ->with(['orders' => function ($query) {
+                $query->where('payment_status', 'paid');
+            }])
+            ->get();
 
         $revenueData = [];
         foreach ($tenants as $tenant) {
-            $revenue = Order::withoutGlobalScopes()
-                ->where('tenant_id', $tenant->id)
-                ->where('payment_status', 'paid')
-                ->sum('total_amount');
+            $revenue = (float) $tenant->orders->sum('total_amount');
             
             if ($revenue > 0) {
                 $revenueData[] = [
                     'name' => $tenant->name,
-                    'revenue' => (float) $revenue,
+                    'revenue' => $revenue,
                 ];
             }
         }
@@ -41,6 +41,10 @@ class TopTenantsChartWidget extends ChartWidget
         
         $topTenants = array_slice($revenueData, 0, 10);
 
+        if (empty($topTenants)) {
+            return $this->getEmptyData();
+        }
+
         $labels = array_column($topTenants, 'name');
         $data = array_column($topTenants, 'revenue');
 
@@ -49,30 +53,8 @@ class TopTenantsChartWidget extends ChartWidget
                 [
                     'label' => 'Revenue (Rp)',
                     'data' => $data,
-                    'backgroundColor' => [
-                        'rgba(59, 130, 246, 0.8)',
-                        'rgba(34, 197, 94, 0.8)',
-                        'rgba(251, 191, 36, 0.8)',
-                        'rgba(239, 68, 68, 0.8)',
-                        'rgba(168, 85, 247, 0.8)',
-                        'rgba(236, 72, 153, 0.8)',
-                        'rgba(20, 184, 166, 0.8)',
-                        'rgba(249, 115, 22, 0.8)',
-                        'rgba(14, 165, 233, 0.8)',
-                        'rgba(139, 92, 246, 0.8)',
-                    ],
-                    'borderColor' => [
-                        'rgb(59, 130, 246)',
-                        'rgb(34, 197, 94)',
-                        'rgb(251, 191, 36)',
-                        'rgb(239, 68, 68)',
-                        'rgb(168, 85, 247)',
-                        'rgb(236, 72, 153)',
-                        'rgb(20, 184, 166)',
-                        'rgb(249, 115, 22)',
-                        'rgb(14, 165, 233)',
-                        'rgb(139, 92, 246)',
-                    ],
+                    'backgroundColor' => $this->getColors(count($data)),
+                    'borderColor' => $this->getBorderColors(count($data)),
                 ],
             ],
             'labels' => $labels,
@@ -121,8 +103,46 @@ class TopTenantsChartWidget extends ChartWidget
         ];
     }
 
+    protected function getColors(int $count): array
+    {
+        $colors = [
+            'rgba(59, 130, 246, 0.8)',
+            'rgba(34, 197, 94, 0.8)',
+            'rgba(251, 191, 36, 0.8)',
+            'rgba(239, 68, 68, 0.8)',
+            'rgba(168, 85, 247, 0.8)',
+            'rgba(236, 72, 153, 0.8)',
+            'rgba(20, 184, 166, 0.8)',
+            'rgba(249, 115, 22, 0.8)',
+            'rgba(14, 165, 233, 0.8)',
+            'rgba(139, 92, 246, 0.8)',
+        ];
+
+        return array_slice($colors, 0, $count);
+    }
+
+    protected function getBorderColors(int $count): array
+    {
+        return array_map(function($color) {
+            return str_replace('0.8', '1', $color);
+        }, $this->getColors($count));
+    }
+
+    protected function getEmptyData(): array
+    {
+        return [
+            'datasets' => [
+                [
+                    'label' => 'Revenue (Rp)',
+                    'data' => [],
+                ],
+            ],
+            'labels' => [],
+        ];
+    }
+
     public static function canView(): bool
     {
-        return auth()->user()?->hasRole('super_admin') ?? false;
+        return auth()->user()?->isSuperAdmin() ?? false;
     }
 }

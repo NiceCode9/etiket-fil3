@@ -11,10 +11,11 @@ class OrdersChartWidget extends ChartWidget
     protected static ?string $heading = 'Orders (30 Hari Terakhir)';
     protected static ?int $sort = 2;
     protected static ?string $maxHeight = '300px';
-    protected static ?string $pollingInterval = '30s'; // Update every 30 seconds
+    protected static ?string $pollingInterval = '30s';
 
-    protected function getData(): array
+    public function getData(): array
     {
+        $user = auth()->user();
         $data = [];
         $labels = [];
         
@@ -23,9 +24,12 @@ class OrdersChartWidget extends ChartWidget
             $startOfDay = $date->copy()->startOfDay();
             $endOfDay = $date->copy()->endOfDay();
             
-            $count = Order::withoutGlobalScopes()
-                ->whereBetween('created_at', [$startOfDay, $endOfDay])
-                ->count();
+            // Build query based on user role
+            $query = $user->isSuperAdmin() 
+                ? Order::withoutGlobalScopes()
+                : Order::query(); // HasTenant trait will auto-filter
+            
+            $count = $query->whereBetween('created_at', [$startOfDay, $endOfDay])->count();
             
             $data[] = $count;
             $labels[] = $date->format('d M');
@@ -76,6 +80,7 @@ class OrdersChartWidget extends ChartWidget
 
     public static function canView(): bool
     {
-        return auth()->user()?->hasRole('super_admin') ?? false;
+        $user = auth()->user();
+        return $user && ($user->isSuperAdmin() || $user->belongsToTenant());
     }
 }

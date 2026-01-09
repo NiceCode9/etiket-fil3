@@ -8,17 +8,25 @@ use Filament\Widgets\ChartWidget;
 class PaymentStatusChartWidget extends ChartWidget
 {
     protected static ?string $heading = 'Payment Status Distribution';
-    protected static ?int $sort = 6;
+    protected static ?int $sort = 7;
     protected static ?string $maxHeight = '300px';
+    protected static ?string $pollingInterval = '30s';
 
     protected function getData(): array
     {
+        $user = auth()->user();
+        
+        // Build query based on user role
+        $query = $user->isSuperAdmin() 
+            ? Order::withoutGlobalScopes()
+            : Order::query(); // HasTenant trait will auto-filter
+
         $statuses = [
-            'paid' => Order::withoutGlobalScopes()->where('payment_status', 'paid')->count(),
-            'pending' => Order::withoutGlobalScopes()->where('payment_status', 'pending')->count(),
-            'failed' => Order::withoutGlobalScopes()->where('payment_status', 'failed')->count(),
-            'expired' => Order::withoutGlobalScopes()->where('payment_status', 'expired')->count(),
-            'refunded' => Order::withoutGlobalScopes()->where('payment_status', 'refunded')->count(),
+            'paid' => $query->clone()->where('payment_status', 'paid')->count(),
+            'pending' => $query->clone()->where('payment_status', 'pending')->count(),
+            'failed' => $query->clone()->where('payment_status', 'failed')->count(),
+            'expired' => $query->clone()->where('payment_status', 'expired')->count(),
+            'refunded' => $query->clone()->where('payment_status', 'refunded')->count(),
         ];
 
         return [
@@ -70,6 +78,7 @@ class PaymentStatusChartWidget extends ChartWidget
 
     public static function canView(): bool
     {
-        return auth()->user()?->hasRole('super_admin') ?? false;
+        $user = auth()->user();
+        return $user && ($user->isSuperAdmin() || $user->belongsToTenant());
     }
 }

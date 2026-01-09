@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TicketTypeResource\Pages;
 use App\Filament\Resources\TicketTypeResource\RelationManagers;
 use App\Models\TicketType;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -96,6 +97,27 @@ class TicketTypeResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = Filament::auth()->user();
+
+        // Super admin dapat melihat semua data
+        if ($user && $user->hasRole('super_admin')) {
+            return $query;
+        }
+
+        // Tenant hanya dapat melihat ticket type untuk event di tenant-nya
+        if ($user && $user->tenant_id) {
+            $query->whereHas('event', function (Builder $eventQuery) use ($user) {
+                $eventQuery->where('tenant_id', $user->tenant_id);
+            });
+        }
+
+        return $query;
     }
 
     public static function getPages(): array

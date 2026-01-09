@@ -8,13 +8,20 @@ use Illuminate\Support\Carbon;
 
 class RevenueChartWidget extends ChartWidget
 {
-    protected static ?string $heading = 'Revenue (30 Hari Terakhir)';
     protected static ?int $sort = 3;
     protected static ?string $maxHeight = '300px';
-    protected static ?string $pollingInterval = '30s'; // Update every 30 seconds
+    protected static ?string $pollingInterval = '30s';
+
+    public function getHeading(): string
+    {
+        $user = auth()->user();
+        $suffix = $user->isSuperAdmin() ? ' All' : '';
+        return 'Revenue (30 Hari Terakhir)' . $suffix;
+    }
 
     protected function getData(): array
     {
+        $user = auth()->user();
         $data = [];
         $labels = [];
         
@@ -23,7 +30,12 @@ class RevenueChartWidget extends ChartWidget
             $startOfDay = $date->copy()->startOfDay();
             $endOfDay = $date->copy()->endOfDay();
             
-            $revenue = Order::withoutGlobalScopes()
+            // Build query based on user role
+            $query = $user->isSuperAdmin() 
+                ? Order::withoutGlobalScopes()
+                : Order::query(); // HasTenant trait will auto-filter
+            
+            $revenue = $query
                 ->where('payment_status', 'paid')
                 ->whereBetween('paid_at', [$startOfDay, $endOfDay])
                 ->sum('total_amount');
@@ -84,6 +96,7 @@ class RevenueChartWidget extends ChartWidget
 
     public static function canView(): bool
     {
-        return auth()->user()?->hasRole('super_admin') ?? false;
+        $user = auth()->user();
+        return $user && ($user->isSuperAdmin() || $user->belongsToTenant());
     }
 }

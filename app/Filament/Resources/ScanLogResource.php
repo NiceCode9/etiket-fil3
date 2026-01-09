@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ScanLogResource\Pages;
 use App\Filament\Resources\ScanLogResource\RelationManagers;
 use App\Models\ScanLog;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -89,6 +90,27 @@ class ScanLogResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = Filament::auth()->user();
+
+        // Super admin dapat melihat semua data
+        if ($user && $user->hasRole('super_admin')) {
+            return $query;
+        }
+
+        // Tenant hanya dapat melihat scan log untuk ticket di tenant-nya
+        if ($user && $user->tenant_id) {
+            $query->whereHas('ticket', function (Builder $ticketQuery) use ($user) {
+                $ticketQuery->where('tenant_id', $user->tenant_id);
+            });
+        }
+
+        return $query;
     }
 
     public static function getPages(): array

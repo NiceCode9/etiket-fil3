@@ -2,39 +2,46 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Ticket;
 use App\Models\TicketType;
 use Filament\Widgets\ChartWidget;
 
 class BestSellingTicketsChartWidget extends ChartWidget
 {
-    protected static ?string $heading = 'Best Selling Ticket Types';
     protected static ?int $sort = 4;
     protected static ?string $maxHeight = '400px';
     protected static ?string $pollingInterval = '30s';
 
+    public function getHeading(): string
+    {
+        $user = auth()->user();
+        $suffix = $user->isSuperAdmin() ? ' (All Tenants)' : '';
+        return 'Best Selling Ticket Types' . $suffix;
+    }
+
     protected function getData(): array
     {
         $user = auth()->user();
-        
-        if (!$user->tenant_id) {
-            return $this->getEmptyData();
+
+        // Build query based on user role
+        $query = TicketType::query()->with(['event', 'tickets']);
+
+        if ($user->isSuperAdmin()) {
+            // Super admin: get all ticket types from all tenants
+            $query->whereHas('event', function ($q) {
+                $q->withoutGlobalScopes();
+            });
         }
+        // For tenant admin: HasTenant trait will auto-filter through event relationship
 
-        $tenantId = $user->tenant_id;
-
-        // Get ticket types with their sales count for this tenant
-        $ticketTypes = TicketType::whereHas('event', function ($query) use ($tenantId) {
-            $query->where('tenant_id', $tenantId);
-        })->withCount(['tickets' => function ($query) use ($tenantId) {
-            $query->where('tenant_id', $tenantId);
-        }])->get();
+        // Get ticket types with their sales count
+        $ticketTypes = $query->withCount('tickets')->get();
 
         $salesData = [];
         foreach ($ticketTypes as $type) {
             if ($type->tickets_count > 0) {
                 $salesData[] = [
                     'name' => $type->name,
+                    'event' => $type->event->name ?? 'N/A',
                     'count' => $type->tickets_count,
                 ];
             }
@@ -51,31 +58,23 @@ class BestSellingTicketsChartWidget extends ChartWidget
             return $this->getEmptyData();
         }
 
-        $labels = array_column($topTickets, 'name');
+        // Create labels with event name (truncated)
+        $labels = array_map(function($item) {
+            $eventName = mb_strlen($item['event']) > 20 
+                ? mb_substr($item['event'], 0, 20) . '...' 
+                : $item['event'];
+            return $item['name'] . ' (' . $eventName . ')';
+        }, $topTickets);
+        
         $data = array_column($topTickets, 'count');
-
-        $colors = [
-            'rgba(59, 130, 246, 0.8)',
-            'rgba(34, 197, 94, 0.8)',
-            'rgba(251, 191, 36, 0.8)',
-            'rgba(239, 68, 68, 0.8)',
-            'rgba(168, 85, 247, 0.8)',
-            'rgba(236, 72, 153, 0.8)',
-            'rgba(20, 184, 166, 0.8)',
-            'rgba(249, 115, 22, 0.8)',
-            'rgba(14, 165, 233, 0.8)',
-            'rgba(139, 92, 246, 0.8)',
-        ];
 
         return [
             'datasets' => [
                 [
                     'label' => 'Tickets Sold',
                     'data' => $data,
-                    'backgroundColor' => array_slice($colors, 0, count($data)),
-                    'borderColor' => array_map(function($color) {
-                        return str_replace('0.8', '1', $color);
-                    }, array_slice($colors, 0, count($data))),
+                    'backgroundColor' => $this->getColors(count($data)),
+                    'borderColor' => $this->getBorderColors(count($data)),
                 ],
             ],
             'labels' => $labels,
@@ -98,6 +97,11 @@ class BestSellingTicketsChartWidget extends ChartWidget
                 ],
                 'tooltip' => [
                     'enabled' => true,
+                    'callbacks' => [
+                        'label' => "function(context) {
+                            return 'Tickets Sold: ' + context.parsed.y;
+                        }",
+                    ],
                 ],
             ],
             'scales' => [
@@ -105,6 +109,9 @@ class BestSellingTicketsChartWidget extends ChartWidget
                     'ticks' => [
                         'maxRotation' => 45,
                         'minRotation' => 45,
+                        'font' => [
+                            'size' => 10,
+                        ],
                     ],
                 ],
                 'y' => [
@@ -115,6 +122,31 @@ class BestSellingTicketsChartWidget extends ChartWidget
                 ],
             ],
         ];
+    }
+
+    protected function getColors(int $count): array
+    {
+        $colors = [
+            'rgba(59, 130, 246, 0.8)',   // blue
+            'rgba(34, 197, 94, 0.8)',    // green
+            'rgba(251, 191, 36, 0.8)',   // yellow
+            'rgba(239, 68, 68, 0.8)',    // red
+            'rgba(168, 85, 247, 0.8)',   // purple
+            'rgba(236, 72, 153, 0.8)',   // pink
+            'rgba(20, 184, 166, 0.8)',   // teal
+            'rgba(249, 115, 22, 0.8)',   // orange
+            'rgba(14, 165, 233, 0.8)',   // sky
+            'rgba(139, 92, 246, 0.8)',   // violet
+        ];
+
+        return array_slice($colors, 0, $count);
+    }
+
+    protected function getBorderColors(int $count): array
+    {
+        return array_map(function($color) {
+            return str_replace('0.8', '1', $color);
+        }, $this->getColors($count));
     }
 
     protected function getEmptyData(): array
@@ -133,6 +165,6 @@ class BestSellingTicketsChartWidget extends ChartWidget
     public static function canView(): bool
     {
         $user = auth()->user();
-        return $user && ($user->hasRole('tenant_admin') || $user->hasRole('super_admin'));
+        return $user && ($user->isSuperAdmin() || $user->belongsToTenant());
     }
 }

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Filament\Resources\CustomerResource\RelationManagers;
 use App\Models\Customer;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -79,6 +80,27 @@ class CustomerResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = Filament::auth()->user();
+
+        // Super admin dapat melihat semua data
+        if ($user && $user->hasRole('super_admin')) {
+            return $query;
+        }
+
+        // Tenant hanya dapat melihat customer yang punya order di tenant-nya
+        if ($user && $user->tenant_id) {
+            $query->whereHas('orders', function (Builder $ordersQuery) use ($user) {
+                $ordersQuery->where('tenant_id', $user->tenant_id);
+            });
+        }
+
+        return $query;
     }
 
     public static function getPages(): array
