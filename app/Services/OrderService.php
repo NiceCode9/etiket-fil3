@@ -47,7 +47,7 @@ class OrderService
                 // Get current price (check war ticket)
                 $warTicket = $ticketType->getActiveWarTicket();
                 $price = $warTicket ? $warTicket->war_price : $ticketType->price;
-                $subtotal = $price * $item['quantity'];
+                $subtotal = ((int)$price + 4500) * $item['quantity'];
 
                 // Create order item
                 OrderItem::create([
