@@ -1,5 +1,6 @@
 <?php
 return [
+    'midtrans_url' => env('MIDTRANS_URL', 'https://app.sandbox.midtrans.com/snap/snap.js'),
     'merchant_id' => env('MIDTRANS_MERCHANT_ID'),
     'client_key' => env('MIDTRANS_CLIENT_KEY'),
     'server_key' => env('MIDTRANS_SERVER_KEY'),
