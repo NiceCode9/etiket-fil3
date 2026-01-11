@@ -137,6 +137,53 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Syarat dan Ketentuan -->
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden mt-8 p-8">
+                        <h3 class="font-bold text-lg mb-6 flex items-center gap-2">
+                            <i class="fas fa-file-contract text-red-600"></i>
+                            Syarat dan Ketentuan
+                        </h3>
+                        <ul class="space-y-3 text-gray-700">
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 mt-1 flex-shrink-0"></i>
+                                <span>Tiket yang sudah dibeli tidak dapat dikembalikan atau ditukar dengan uang.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 mt-1 flex-shrink-0"></i>
+                                <span>Setiap pengunjung wajib membawa invoice tiket (cetak atau digital) dan identitas
+                                    diri yang sah.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 mt-1 flex-shrink-0"></i>
+                                <span>Tiket hanya berlaku untuk satu kali masuk dan tidak dapat digunakan ulang.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 mt-1 flex-shrink-0"></i>
+                                <span>Penyelenggara berhak menolak pengunjung yang tidak memenuhi syarat atau melanggar
+                                    peraturan.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 mt-1 flex-shrink-0"></i>
+                                <span>Dilarang membawa senjata tajam, obat-obatan terlarang, atau benda berbahaya
+                                    lainnya.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 mt-1 flex-shrink-0"></i>
+                                <span>Penyelenggara tidak bertanggung jawab atas kehilangan barang berharga milik
+                                    pengunjung.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 mt-1 flex-shrink-0"></i>
+                                <span>Harap datang 30 menit sebelum acara dimulai untuk proses registrasi.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 mt-1 flex-shrink-0"></i>
+                                <span>Dengan membeli tiket, pengunjung dianggap telah membaca dan menyetujui semua
+                                    syarat dan ketentuan yang berlaku.</span>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- RIGHT: Ticket Selection -->
@@ -189,7 +236,8 @@
                                                 class="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-lg flex items-center justify-center transition">
                                                 <i class="fas fa-minus text-xs"></i>
                                             </button>
-                                            <span class="w-8 text-center font-bold" id="qty-{{ $ticketType->id }}">0</span>
+                                            <span class="w-8 text-center font-bold"
+                                                id="qty-{{ $ticketType->id }}">0</span>
                                             <button type="button" onclick="updateQuantity({{ $ticketType->id }}, 1)"
                                                 class="w-8 h-8 bg-brand-yellow hover:bg-yellow-400 rounded-lg flex items-center justify-center transition">
                                                 <i class="fas fa-plus text-xs"></i>

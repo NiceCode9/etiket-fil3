@@ -109,9 +109,13 @@
                     class="block px-3 py-2 text-base font-medium rounded-lg {{ request()->routeIs('events.*') ? 'bg-brand-yellow text-black' : 'text-white hover:bg-gray-700' }}">
                     Jelajah
                 </a>
+                <a href="{{ route('tracking.index') }}"
+                    class="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700 rounded-lg">
+                    Tracking
+                </a>
                 <a href="{{ route('about') }}"
-                    class="block px-3 py-2 text-base font-medium{{ request()->routeIs('about') ? 'bg-brand-yellow text-black' : 'text-white hover:bg-gray-700' }} rounded-lg">
-                    Tentang
+                    class="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700 rounded-lg">
+                    Tentang Kami
                 </a>
                 <a href="#" class="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700 rounded-lg">
                     Hubungi Kami

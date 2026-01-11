@@ -314,7 +314,7 @@
                                 class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer transform hover:-translate-y-1">
                                 <a href="{{ route('events.show', $event->slug) }}">
                                     <div class="relative h-48 overflow-hidden">
-                                        <img src="{{ $event->image_url ?? 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?auto=format&fit=crop&w=800&q=80' }}"
+                                        <img src="{{ $event->poster_img ?? 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?auto=format&fit=crop&w=800&q=80' }}"
                                             class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
                                             alt="{{ $event->name ?? $event->title }}">
 
@@ -344,7 +344,7 @@
 
                                         <div class="flex items-center text-gray-600 text-sm mb-3">
                                             <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
-                                            <span class="line-clamp-1">{{ $event->location }}</span>
+                                            <span class="line-clamp-1">{{ $event->venue }}</span>
                                         </div>
 
                                         <div class="flex items-center text-gray-600 text-sm mb-4">
