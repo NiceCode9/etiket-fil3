@@ -314,7 +314,7 @@
                                 class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer transform hover:-translate-y-1">
                                 <a href="{{ route('events.show', $event->slug) }}">
                                     <div class="relative h-48 overflow-hidden">
-                                        <img src="{{ $event->poster_img ?? 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?auto=format&fit=crop&w=800&q=80' }}"
+                                        <img src="{{ $event->poster_image ?? 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?auto=format&fit=crop&w=800&q=80' }}"
                                             class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
                                             alt="{{ $event->name ?? $event->title }}">
 
