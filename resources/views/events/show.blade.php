@@ -83,7 +83,7 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
                         <!-- Event Image -->
-                        <div class="relative h-96 overflow-hidden">
+                        <div class="relative overflow-hidden" style="aspect-ratio: 16 / 9;">
                             <img src="{{ $event->poster_image ? asset('storage/' . $event->poster_image) : asset('images/default-event.jpg') }}"
                                 class="w-full h-full object-cover" alt="{{ $event->name }}">
                         </div>
@@ -135,6 +135,21 @@
                                     {!! nl2br(e($event->description)) !!}
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Layout Venue -->
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden mt-8 p-2">
+                        <h3 class="font-bold text-lg mb-6 flex items-center gap-2">
+                            <i class="fas fa-info-circle text-blue-600"></i>
+                            Layout Venue
+                        </h3>
+                        <div class="relative overflow-hidden rounded-lg" style="aspect-ratio: 16 / 9;">
+                            <a href="#"
+                                onclick="openImagePreview('{{ $event->venue_image ? asset('storage/' . $event->venue_image) : asset('images/default-event.jpg') }}')">
+                                <img src="{{ $event->venue_image ? asset('storage/' . $event->venue_image) : asset('images/default-event.jpg') }}"
+                                    class="w-full h-full object-cover rounded-lg" alt="{{ $event->name }}">
+                            </a>
                         </div>
                     </div>
 
@@ -346,7 +361,8 @@
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-yellow transition"
                                         placeholder="Masukkan nomor identitas">
                                     <p class="text-xs text-gray-500 mt-1">
-                                        <i class="fas fa-info-circle mr-1"></i> Nomor identitas diperlukan untuk verifikasi
+                                        <i class="fas fa-info-circle mr-1"></i> Nomor identitas diperlukan untuk
+                                        verifikasi
                                         di lokasi event
                                     </p>
                                 </div>
@@ -356,7 +372,8 @@
                                         <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-3"></i>
                                         <div class="text-sm text-yellow-800">
                                             <p class="font-semibold mb-1">Penting!</p>
-                                            <p>Pastikan data yang Anda masukkan sudah benar. Data ini akan digunakan untuk
+                                            <p>Pastikan data yang Anda masukkan sudah benar. Data ini akan digunakan
+                                                untuk
                                                 verifikasi tiket dan tidak dapat diubah setelah pembayaran.</p>
                                         </div>
                                     </div>
@@ -436,7 +453,7 @@
 @push('scripts')
     <script>
         // Timer Configuration
-        const TIMER_DURATION = 5 * 60; // 5 minutes in seconds
+        const TIMER_DURATION = 10 * 60; // 10 minutes in seconds
         let timeRemaining = TIMER_DURATION;
         let timerInterval;
         let redirectCountdown = 5;
@@ -700,6 +717,16 @@
                 }
             }
         });
+
+        function openImagePreview(imageUrl) {
+            const previewWindow = window.open('', '_blank');
+            previewWindow.document.write(
+                '<html><head><title>Image Preview</title></head><body style="margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: rgba(0, 0, 0, 0.8);">'
+            );
+            previewWindow.document.write('<img src="' + imageUrl + '" style="max-width: 100%; max-height: 100%;" />');
+            previewWindow.document.write('</body></html>');
+            previewWindow.document.close();
+        }
     </script>
 @endpush
 

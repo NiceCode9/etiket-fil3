@@ -51,16 +51,19 @@ class InvoiceService
     private function addHeader($pdf, Order $order)
     {
         // Logo (optional - add your logo path)
-        // $pdf->Image('path/to/logo.png', 10, 6, 30);
+        $pdf->Image('logo.png', 90, 6, 30);
+
+        // Add space between logo and company name
+        $pdf->Ln(6);
 
         // Company name
         $pdf->SetFont('Arial', 'B', 20);
         $pdf->Cell(0, 10, 'INVOICE', 0, 1, 'C');
 
         $pdf->SetFont('Arial', '', 10);
-        $pdf->Cell(0, 5, 'Your Company Name', 0, 1, 'C');
-        $pdf->Cell(0, 5, 'Address Line 1, City, Postal Code', 0, 1, 'C');
-        $pdf->Cell(0, 5, 'Phone: +62 xxx-xxxx-xxxx | Email: info@example.com', 0, 1, 'C');
+        $pdf->Cell(0, 5, 'Untix By Unovia Creative', 0, 1, 'C');
+        // $pdf->Cell(0, 5, 'Address Line 1, City, Postal Code', 0, 1, 'C');
+        $pdf->Cell(0, 5, 'Phone: +62 821-4081-7545 | Email: unoviacreative@gmail.com', 0, 1, 'C');
 
         $pdf->Ln(5);
 

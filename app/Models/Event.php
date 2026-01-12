@@ -21,6 +21,7 @@ class Event extends Model
         'event_date',
         'event_end_date',
         'poster_image',
+        'venue_image',
         'status',
         'tenant_id',
     ];

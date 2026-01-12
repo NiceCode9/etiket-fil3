@@ -116,7 +116,13 @@ class EventController extends Controller
 
     public function show($slug)
     {
-        $event = Event::with(['ticketTypes.warTickets'])
+        $event = Event::with([
+            'ticketTypes' => function ($query) {
+                $query->where('is_active', true)
+                    ->where('available_quota', '>', 0);
+            },
+            'ticketTypes.warTickets'
+        ])
             ->where('slug', $slug)
             ->published()
             ->firstOrFail();

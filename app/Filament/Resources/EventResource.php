@@ -39,7 +39,7 @@ class EventResource extends Resource
                             ->label('Tenant')
                             ->relationship('tenant', 'name')
                             ->required()
-                            ->visible(fn () => $isSuperAdmin)
+                            ->visible(fn() => $isSuperAdmin)
                             ->searchable()
                             ->preload()
                             ->createOptionForm([
@@ -51,7 +51,7 @@ class EventResource extends Resource
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255)
-                            ->disabled(fn () => $isTenantAdmin)
+                            ->disabled(fn() => $isTenantAdmin)
                             ->live(onBlur: true)
                             ->afterStateUpdated(
                                 fn(string $state, Forms\Set $set) =>
@@ -62,33 +62,40 @@ class EventResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
-                            ->disabled(fn () => $isTenantAdmin),
+                            ->disabled(fn() => $isTenantAdmin),
 
                         Forms\Components\Textarea::make('description')
                             ->rows(3)
                             ->columnSpanFull()
-                            ->disabled(fn () => $isTenantAdmin),
+                            ->disabled(fn() => $isTenantAdmin),
 
                         Forms\Components\TextInput::make('venue')
                             ->required()
                             ->maxLength(255)
-                            ->disabled(fn () => $isTenantAdmin),
+                            ->disabled(fn() => $isTenantAdmin),
 
                         Forms\Components\DateTimePicker::make('event_date')
                             ->required()
                             ->native(false)
-                            ->disabled(fn () => $isTenantAdmin),
+                            ->disabled(fn() => $isTenantAdmin),
 
                         Forms\Components\DateTimePicker::make('event_end_date')
                             ->native(false)
-                            ->disabled(fn () => $isTenantAdmin),
+                            ->disabled(fn() => $isTenantAdmin),
 
                         Forms\Components\FileUpload::make('poster_image')
                             ->image()
                             ->directory('events/posters')
                             ->imageEditor()
                             ->columnSpanFull()
-                            ->disabled(fn () => $isTenantAdmin),
+                            ->disabled(fn() => $isTenantAdmin),
+
+                        Forms\Components\FileUpload::make('venue_image')
+                            ->image()
+                            ->directory('events/venue_images')
+                            ->imageEditor()
+                            ->columnSpanFull()
+                            ->disabled(fn() => $isTenantAdmin),
 
                         Forms\Components\Select::make('status')
                             ->options([
@@ -99,7 +106,7 @@ class EventResource extends Resource
                             ])
                             ->required()
                             ->default('draft')
-                            ->disabled(fn () => $isTenantAdmin),
+                            ->disabled(fn() => $isTenantAdmin),
                     ])->columns(2),
             ]);
     }
@@ -110,6 +117,10 @@ class EventResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('poster_image')
                     ->circular(),
+
+                Tables\Columns\ImageColumn::make('venue_image')
+                    ->circular()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
@@ -134,7 +145,7 @@ class EventResource extends Resource
                     ->label('Tenant')
                     ->sortable()
                     ->searchable()
-                    ->visible(fn () => Filament::auth()->user()?->hasRole('super_admin') ?? false),
+                    ->visible(fn() => Filament::auth()->user()?->hasRole('super_admin') ?? false),
 
                 Tables\Columns\TextColumn::make('ticketTypes_count')
                     ->counts('ticketTypes')
@@ -158,9 +169,9 @@ class EventResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn () => !(Filament::auth()->user()?->hasRole('tenant_admin') ?? false)),
+                    ->visible(fn() => !(Filament::auth()->user()?->hasRole('tenant_admin') ?? false)),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn () => !(Filament::auth()->user()?->hasRole('tenant_admin') ?? false)),
+                    ->visible(fn() => !(Filament::auth()->user()?->hasRole('tenant_admin') ?? false)),
             ])
             ->headerActions([
                 Action::make('exportExcel')
@@ -170,13 +181,13 @@ class EventResource extends Resource
                     ->action(function () {
                         $user = Auth::user();
                         $tenantId = $user->hasRole('super_admin') ? null : $user->tenant_id;
-                        
+
                         return Excel::download(
                             new EventsExport($tenantId),
                             'events_' . date('Y-m-d_His') . '.xlsx'
                         );
                     }),
-                
+
                 Action::make('exportPdf')
                     ->label('Export PDF')
                     ->icon('heroicon-o-document-arrow-down')
@@ -184,7 +195,7 @@ class EventResource extends Resource
                     ->action(function () {
                         $user = Auth::user();
                         $tenantId = $user->hasRole('super_admin') ? null : $user->tenant_id;
-                        
+
                         return Excel::download(
                             new EventsExport($tenantId),
                             'events_' . date('Y-m-d_His') . '.pdf',
