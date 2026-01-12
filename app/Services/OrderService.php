@@ -16,9 +16,10 @@ class OrderService
         return DB::transaction(function () use ($data) {
             // 1. Create or get customer
             $customer = Customer::firstOrCreate(
-                ['email' => $data['identity_number']],
+                ['identity_number' => $data['identity_number']],
                 [
                     'full_name' => $data['full_name'],
+                    'email' => $data['email'],
                     'phone_number' => $data['phone_number'],
                     'identity_type' => $data['identity_type'],
                     'identity_number' => $data['identity_number'],
