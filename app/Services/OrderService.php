@@ -16,7 +16,7 @@ class OrderService
         return DB::transaction(function () use ($data) {
             // 1. Create or get customer
             $customer = Customer::firstOrCreate(
-                ['email' => $data['email']],
+                ['email' => $data['identity_number']],
                 [
                     'full_name' => $data['full_name'],
                     'phone_number' => $data['phone_number'],
@@ -47,7 +47,7 @@ class OrderService
                 // Get current price (check war ticket)
                 $warTicket = $ticketType->getActiveWarTicket();
                 $price = $warTicket ? $warTicket->war_price : $ticketType->price;
-                $subtotal = ((int)$price + 4500) * $item['quantity'];
+                $subtotal = ((int)$price + 9500) * $item['quantity'];
 
                 // Create order item
                 OrderItem::create([
