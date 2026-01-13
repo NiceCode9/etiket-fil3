@@ -110,7 +110,6 @@
 @endsection
 
 @push('scripts')
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}">
     </script>
     <script type="text/javascript">
         const snapToken = @json($order->snap_token);
