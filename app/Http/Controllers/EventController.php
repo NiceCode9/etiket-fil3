@@ -121,7 +121,10 @@ class EventController extends Controller
                 $query->where('is_active', true)
                     ->where('available_quota', '>', 0);
             },
-            'ticketTypes.warTickets'
+            'ticketTypes.warTickets' => function ($query) {
+                $query->where('is_active', true)
+                    ->where('war_available_quota', '>', 0);
+            }
         ])
             ->where('slug', $slug)
             ->published()

@@ -25,10 +25,35 @@ Route::prefix('tracking')->name('tracking.')->group(function () {
 // Checkout - Process order
 Route::post('/checkout/{event}', [CheckoutController::class, 'process'])->name('checkout.process');
 
-// Payment Routes
+// Online Payment Routes
+// Route::prefix('payment')->name('payment.')->group(function () {
+//     // Payment waiting page (shows Midtrans popup)
+//     Route::get('/{orderNumber}/waiting', [CheckoutController::class, 'paymentWaiting'])->name('waiting');
+
+//     // Payment success page
+//     Route::get('/{orderNumber}/success', [CheckoutController::class, 'paymentSuccess'])->name('success');
+
+//     // Payment failed page
+//     Route::get('/{orderNumber}/failed', [CheckoutController::class, 'paymentFailed'])->name('failed');
+
+//     // Cancel payment (when user closes Midtrans popup)
+//     Route::get('/{orderNumber}/cancel', [CheckoutController::class, 'cancelPayment'])->name('cancel');
+
+//     // Check payment status (AJAX)
+//     Route::get('/{orderNumber}/check-status', [CheckoutController::class, 'checkStatus'])->name('check-status');
+
+//     // Download invoice
+//     Route::get('/{orderNumber}/download-invoice', [CheckoutController::class, 'downloadInvoice'])->name('download-invoice');
+
+//     // Midtrans finish redirect
+//     Route::get('/{orderNumber}/finish', [\App\Http\Controllers\Api\MidtransCallbackController::class, 'finish'])->name('finish');
+// });
+
+
+// Offline Payment Routes
 Route::prefix('payment')->name('payment.')->group(function () {
     // Payment waiting page (shows Midtrans popup)
-    Route::get('/{orderNumber}/waiting', [CheckoutController::class, 'paymentWaiting'])->name('waiting');
+    Route::get('/{orderNumber}/waiting', [CheckoutController::class, 'offlinePaymentWaiting'])->name('waiting');
 
     // Payment success page
     Route::get('/{orderNumber}/success', [CheckoutController::class, 'paymentSuccess'])->name('success');

@@ -51,13 +51,19 @@ class OrderService
                 $subtotal = ((int)$price + 9500) * $item['quantity'];
 
                 // Create order item
-                OrderItem::create([
+                $order_item = OrderItem::create([
                     'order_id' => $order->id,
                     'ticket_type_id' => $ticketType->id,
                     'war_ticket_id' => $warTicket?->id,
                     'quantity' => $item['quantity'],
                     'price' => $price,
                     'subtotal' => $subtotal,
+                ]);
+
+                $ticketType->tickets()->create([
+                    'order_item_id' => $order_item->id,
+                    'customer_id' => $customer->id,
+                    'event_id' => $ticketType->event_id,
                 ]);
 
                 // Update quota with lock

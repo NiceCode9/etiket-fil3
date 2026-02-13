@@ -52,13 +52,28 @@ class CheckoutController extends Controller
             $order = $this->orderService->createOrder($validated);
 
             // Get snap token from Midtrans
-            $snapToken = $this->midtransService->createSnapToken($order);
+            // $snapToken = $this->midtransService->createSnapToken($order);
 
             // Redirect to payment waiting page
             return redirect()->route('payment.waiting', $order->order_number);
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
+    }
+
+    /**
+     * Show payment waiting page on offline payment fitur
+     */
+    public function offlinePaymentWaiting($orderNumber)
+    {
+        $order = Order::with(['customer', 'event', 'orderItems.ticketType'])->where('order_number', $orderNumber)->firstOrFail();
+        if ($order->payment_status !== 'pending') {
+            if ($order->payment_status === 'paid') {
+                return redirect()->route('payment.finish', $order->order_number);
+            }
+        }
+
+        return view('checkout.offline-payment-waiting', compact('order'));
     }
 
     /**

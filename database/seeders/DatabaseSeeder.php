@@ -25,10 +25,10 @@ class DatabaseSeeder extends Seeder
             TicketTypeSeeder::class,
             WarTicketSeeder::class,
             CustomerSeeder::class,
-            OrderSeeder::class,
-            OrderItemSeeder::class,
-            TicketSeeder::class,
-            ScanSeeder::class,
+            // OrderSeeder::class,
+            // OrderItemSeeder::class,
+            // TicketSeeder::class,
+            // ScanSeeder::class,
             // ScanLogSeeder::class,
         ]);
     }

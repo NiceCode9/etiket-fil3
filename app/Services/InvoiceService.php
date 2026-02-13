@@ -14,6 +14,9 @@ class InvoiceService
      */
     public function generateInvoice(Order $order): string
     {
+        // Ensure tickets are generated
+        $this->ensureTicketsGenerated($order);
+
         // Create PDF instance
         $pdf = new FPDF('P', 'mm', 'A4');
         $pdf->AddPage();
@@ -24,7 +27,7 @@ class InvoiceService
         $this->addCustomerInfo($pdf, $order);
         $this->addEventInfo($pdf, $order);
         $this->addOrderItems($pdf, $order);
-        $this->addQRCode($pdf, $order);
+        $this->addTicketsWithQRCodes($pdf, $order);
         $this->addFooter($pdf, $order);
 
         // Save PDF
@@ -40,9 +43,36 @@ class InvoiceService
         Log::info('Invoice generated', [
             'order_number' => $order->order_number,
             'path' => $path,
+            'tickets_count' => $order->orderItems->sum(fn($item) => $item->tickets->count()),
         ]);
 
         return $path;
+    }
+
+    /**
+     * Ensure all tickets are generated for the order
+     */
+    private function ensureTicketsGenerated(Order $order)
+    {
+        foreach ($order->orderItems as $orderItem) {
+            $existingTicketsCount = $orderItem->tickets()->count();
+            $neededTickets = $orderItem->quantity - $existingTicketsCount;
+
+            if ($neededTickets > 0) {
+                for ($i = 0; $i < $neededTickets; $i++) {
+                    $orderItem->tickets()->create([
+                        'customer_id' => $order->customer_id,
+                        'event_id' => $order->event_id,
+                        'ticket_type_id' => $orderItem->ticket_type_id,
+                        'tenant_id' => $order->tenant_id,
+                        'status' => 'active',
+                    ]);
+                }
+            }
+        }
+
+        // Refresh the relationship
+        $order->load('orderItems.tickets.customer', 'orderItems.ticketType');
     }
 
     /**
@@ -51,10 +81,13 @@ class InvoiceService
     private function addHeader($pdf, Order $order)
     {
         // Logo (optional - add your logo path)
-        $pdf->Image('logo.png', 90, 6, 30);
-
-        // Add space between logo and company name
-        $pdf->Ln(6);
+        // Check if logo exists
+        if (file_exists(public_path('logo.png'))) {
+            $pdf->Image(public_path('logo.png'), 90, 6, 30);
+            $pdf->Ln(12);
+        } else {
+            $pdf->Ln(6);
+        }
 
         // Company name
         $pdf->SetFont('Arial', 'B', 20);
@@ -62,7 +95,6 @@ class InvoiceService
 
         $pdf->SetFont('Arial', '', 10);
         $pdf->Cell(0, 5, 'Untix By Unovia Creative', 0, 1, 'C');
-        // $pdf->Cell(0, 5, 'Address Line 1, City, Postal Code', 0, 1, 'C');
         $pdf->Cell(0, 5, 'Phone: +62 821-4081-7545 | Email: unoviacreative@gmail.com', 0, 1, 'C');
 
         $pdf->Ln(5);
@@ -192,64 +224,192 @@ class InvoiceService
     }
 
     /**
-     * Add QR code for wristband exchange
+     * Add tickets with individual QR codes
      */
-    private function addQRCode($pdf, Order $order)
+    private function addTicketsWithQRCodes($pdf, Order $order)
     {
-        // Generate QR code
-        $qrCodePath = $this->generateOrderQRCode($order);
-
-        // Add QR code section
-        $pdf->SetFillColor(255, 245, 230);
-        $pdf->Rect(10, $pdf->GetY(), 190, 50, 'F');
-
-        $startY = $pdf->GetY();
-
-        // Add QR code image
-        if ($qrCodePath && Storage::disk('public')->exists($qrCodePath)) {
-            $fullPath = Storage::disk('public')->path($qrCodePath);
-            $pdf->Image($fullPath, 15, $startY + 5, 40, 40);
+        // Get all tickets from order items
+        $allTickets = collect();
+        foreach ($order->orderItems as $orderItem) {
+            $tickets = $orderItem->tickets;
+            foreach ($tickets as $ticket) {
+                $allTickets->push([
+                    'ticket' => $ticket,
+                    'ticket_type' => $orderItem->ticketType->name,
+                ]);
+            }
         }
 
-        // Add text
-        $pdf->SetXY(60, $startY + 5);
-        $pdf->SetFont('Arial', 'B', 12);
-        $pdf->Cell(0, 7, 'EXCHANGE THIS QR CODE FOR WRISTBAND', 0, 1);
+        if ($allTickets->isEmpty()) {
+            // Add warning message
+            $pdf->SetFillColor(255, 200, 200);
+            $pdf->SetFont('Arial', 'B', 10);
+            $pdf->Cell(0, 8, 'WARNING: No tickets found for this order!', 1, 1, 'C', true);
+            return;
+        }
 
-        $pdf->SetX(60);
-        $pdf->SetFont('Arial', '', 9);
-        $pdf->MultiCell(
-            135,
-            5,
-            "Scan this QR code at the event entrance to exchange for your wristband. " .
-                "Please bring a valid ID matching the identity number on this invoice. " .
-                "This QR code is unique and can only be used once."
-        );
+        // Add section header
+        $pdf->SetFillColor(52, 58, 64);
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->SetFont('Arial', 'B', 11);
+        $pdf->Cell(0, 8, 'YOUR TICKETS - EXCHANGE FOR WRISTBAND', 0, 1, 'C', true);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Ln(3);
 
-        $pdf->Ln(55);
+        // Display each ticket with QR code
+        $ticketNumber = 1;
+        foreach ($allTickets as $ticketData) {
+            $ticket = $ticketData['ticket'];
+            $ticketType = $ticketData['ticket_type'];
+
+            // Check if we need a new page
+            if ($pdf->GetY() > 240) {
+                $pdf->AddPage();
+                $pdf->Ln(10);
+            }
+
+            // Generate QR code for this ticket
+            $qrCodePath = $this->generateTicketQRCode($ticket);
+
+            // Ticket container
+            $startY = $pdf->GetY();
+
+            // Draw border
+            $pdf->SetDrawColor(200, 200, 200);
+            $pdf->SetFillColor(255, 250, 240);
+            $pdf->Rect(10, $startY, 190, 55, 'FD');
+
+            // Ticket number badge
+            $pdf->SetXY(15, $startY + 5);
+            $pdf->SetFillColor(52, 58, 64);
+            $pdf->SetTextColor(255, 255, 255);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(20, 6, "TICKET #$ticketNumber", 0, 0, 'C', true);
+
+            // Add QR code image
+            if ($qrCodePath && Storage::disk('public')->exists($qrCodePath)) {
+                $fullPath = Storage::disk('public')->path($qrCodePath);
+                if (file_exists($fullPath)) {
+                    $pdf->Image($fullPath, 15, $startY + 13, 35, 35);
+                } else {
+                    // QR code file doesn't exist
+                    $pdf->SetXY(15, $startY + 13);
+                    $pdf->SetFont('Arial', '', 8);
+                    $pdf->SetTextColor(255, 0, 0);
+                    $pdf->MultiCell(35, 4, "QR Code\nNot Found", 1, 'C');
+                }
+            } else {
+                // Failed to generate QR code
+                $pdf->SetXY(15, $startY + 13);
+                $pdf->SetFont('Arial', '', 8);
+                $pdf->SetTextColor(255, 0, 0);
+                $pdf->MultiCell(35, 4, "QR Code\nGeneration\nFailed", 1, 'C');
+            }
+            $pdf->SetTextColor(0, 0, 0);
+
+            // Ticket details
+            $pdf->SetXY(55, $startY + 5);
+            $pdf->SetFont('Arial', 'B', 11);
+            $pdf->Cell(0, 6, $ticketType, 0, 1);
+
+            $pdf->SetX(55);
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell(40, 5, 'Ticket Number:', 0, 0);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(0, 5, $ticket->ticket_number, 0, 1);
+
+            $pdf->SetX(55);
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell(40, 5, 'Customer:', 0, 0);
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell(0, 5, $ticket->customer->full_name, 0, 1);
+
+            $pdf->SetX(55);
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell(40, 5, 'Identity Number:', 0, 0);
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell(0, 5, $ticket->customer->identity_number, 0, 1);
+
+            $pdf->SetX(55);
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell(40, 5, 'Status:', 0, 0);
+
+            // Status badge
+            $statusBadge = $ticket->getStatusBadge();
+            $statusColors = [
+                'success' => [0, 128, 0],
+                'info' => [0, 112, 192],
+                'danger' => [192, 0, 0],
+                'secondary' => [108, 117, 125],
+            ];
+            $color = $statusColors[$statusBadge['color']] ?? [0, 0, 0];
+            $pdf->SetTextColor($color[0], $color[1], $color[2]);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(0, 5, strtoupper($statusBadge['label']), 0, 1);
+            $pdf->SetTextColor(0, 0, 0);
+
+            // Instructions
+            $pdf->SetXY(55, $startY + 35);
+            $pdf->SetFont('Arial', 'I', 8);
+            $pdf->SetTextColor(100, 100, 100);
+            $pdf->MultiCell(
+                140,
+                4,
+                "Scan this QR code at the event entrance to exchange for wristband. " .
+                    "Bring valid ID matching identity number above."
+            );
+            $pdf->SetTextColor(0, 0, 0);
+
+            // Move to next ticket position
+            $pdf->SetY($startY + 58);
+
+            $ticketNumber++;
+        }
+
+        $pdf->Ln(5);
     }
 
     /**
-     * Generate QR code for order
+     * Generate QR code for individual ticket
      */
-    private function generateOrderQRCode(Order $order): string
+    private function generateTicketQRCode($ticket): ?string
     {
-        $qrData = json_encode([
-            'order_number' => $order->order_number,
-            'identity_number' => $order->customer->identity_number,
-            'total_tickets' => $order->orderItems->sum('quantity'),
-        ]);
+        try {
+            $qrData = json_encode([
+                'ticket_number' => $ticket->ticket_number,
+                'ticket_id' => $ticket->id,
+                'qr_code' => $ticket->qr_code,
+                'customer_id' => $ticket->customer_id,
+                'identity_number' => $ticket->customer->identity_number,
+                'event_id' => $ticket->event_id,
+                'ticket_type_id' => $ticket->ticket_type_id,
+            ]);
 
-        // Generate QR code using SimpleSoftwareIO\QrCode
-        $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
-            ->size(400)
-            ->margin(1)
-            ->generate($qrData);
+            // Generate QR code using SimpleSoftwareIO\QrCode
+            $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
+                ->size(400)
+                ->margin(1)
+                ->generate($qrData);
 
-        $path = "qrcodes/order_{$order->order_number}.png";
-        Storage::disk('public')->put($path, $qrCode);
+            $path = "qrcodes/ticket_{$ticket->ticket_number}.png";
+            Storage::disk('public')->put($path, $qrCode);
 
-        return $path;
+            // Update ticket with QR code path
+            $ticket->update(['qr_code_path' => $path]);
+
+            Log::info('QR Code generated', [
+                'ticket_number' => $ticket->ticket_number,
+                'path' => $path,
+            ]);
+
+            return $path;
+        } catch (\Exception $e) {
+            Log::error('Failed to generate QR code', [
+                'ticket_number' => $ticket->ticket_number,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
     }
 
     /**
@@ -257,6 +417,12 @@ class InvoiceService
      */
     private function addFooter($pdf, Order $order)
     {
+        // Check if we need a new page for footer
+        if ($pdf->GetY() > 230) {
+            $pdf->AddPage();
+            $pdf->Ln(10);
+        }
+
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->Cell(0, 6, 'IMPORTANT NOTES:', 0, 1);
 
@@ -264,12 +430,14 @@ class InvoiceService
         $pdf->MultiCell(
             0,
             4,
-            "1. Please bring a valid ID (KTP/SIM/Passport) matching the identity number on this invoice\n" .
-                "2. Present this invoice and scan the QR code at the registration desk to receive your wristband\n" .
-                "3. The wristband is your ticket to enter the event venue\n" .
-                "4. Wristband exchange is available from [TIME] to [TIME] on event day\n" .
-                "5. This invoice is non-transferable and cannot be refunded\n" .
-                "6. For questions, contact us at: support@example.com or +62 xxx-xxxx-xxxx"
+            "1. Each ticket has a unique QR code that must be scanned individually\n" .
+                "2. Please bring a valid ID (KTP/SIM/Passport) matching the identity number on this invoice\n" .
+                "3. Present this invoice and scan each QR code at the registration desk to receive wristbands\n" .
+                "4. Each QR code can only be used once and is non-transferable\n" .
+                "5. Wristband exchange is available from [TIME] to [TIME] on event day\n" .
+                "6. Lost or damaged tickets cannot be replaced\n" .
+                "7. This invoice is non-refundable\n" .
+                "8. For questions, contact us at: unoviacreative@gmail.com or +62 821-4081-7545"
         );
 
         $pdf->Ln(5);
